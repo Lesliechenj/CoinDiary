@@ -51,7 +51,13 @@ object BudgetCalculator {
         /** 按天统计，日期倒序（最近的在前面） */
         val days: List<DayStat>
     ) {
-        /** 今天还能花多少 */
+        /**
+         * 今天这一天自己的结余：今日预算 − 今日已花。
+         * 不含之前结转，所以超支就是负数 —— 首页大字显示的是这个。
+         */
+        val todayBalanceCents: Long get() = todayBudgetCents - todaySpentCents
+
+        /** 截至今天的累计结余（含之前结转），也就是存钱罐里的钱 */
         val todayRemainingCents: Long get() = carriedInCents + todayBudgetCents - todaySpentCents
     }
 

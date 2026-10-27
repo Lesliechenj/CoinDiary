@@ -41,7 +41,8 @@ fun HomeScreen(
 ) {
     val today = LocalDate.now()
     val todayKey = today.toString()
-    val remaining = summary.todayRemainingCents
+    // 大字只看今天这一天：今日预算 − 今日已花。跨天的累计放在下面的存钱罐里。
+    val remaining = summary.todayBalanceCents
     val overspent = remaining < 0L
     val accent = if (overspent) {
         MaterialTheme.colorScheme.error
@@ -75,7 +76,7 @@ fun HomeScreen(
         item {
             TicketCard {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    SectionLabel(if (overspent) "今天已经超支" else "今天还能花")
+                    SectionLabel(if (overspent) "今日超支" else "今日结余")
                     Spacer(Modifier.weight(1f))
                     if (overspent) {
                         StampChip("超支 " + centsToPlainYuan(-remaining))
@@ -135,11 +136,11 @@ fun HomeScreen(
             }
         }
 
-        // ---------- 存钱罐（截至昨天） ----------
+        // ---------- 存钱罐（截至今日） ----------
         item {
             TicketCard {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    SectionLabel("存钱罐 · 截至昨天")
+                    SectionLabel("存钱罐 · 截至今日")
                     Spacer(Modifier.weight(1f))
                     Text(
                         text = "自 ${summary.startDate.toChineseDate()} 起",
@@ -149,9 +150,9 @@ fun HomeScreen(
                 }
                 Spacer(Modifier.height(8.dp))
                 MoneyText(
-                    text = centsToPlainYuan(summary.carriedInCents),
+                    text = centsToPlainYuan(summary.totalRemainingCents),
                     fontSize = 28.sp,
-                    color = if (summary.carriedInCents < 0L) {
+                    color = if (summary.totalRemainingCents < 0L) {
                         MaterialTheme.colorScheme.error
                     } else {
                         MaterialTheme.colorScheme.secondary
@@ -159,7 +160,7 @@ fun HomeScreen(
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    text = "今天还能花 = 存钱罐 + 今日预算 − 今日已花",
+                    text = "存钱罐 = 之前结余 + 今日结余",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -172,9 +173,9 @@ fun HomeScreen(
                     SectionLabel("近 7 天每天的结余")
                     Spacer(Modifier.weight(1f))
                     Text(
-                        text = if (summary.carriedInCents < 0L) "已透支" else "有结余",
+                        text = if (summary.totalRemainingCents < 0L) "已透支" else "有结余",
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (summary.carriedInCents < 0L) {
+                        color = if (summary.totalRemainingCents < 0L) {
                             MaterialTheme.colorScheme.error
                         } else {
                             MaterialTheme.colorScheme.secondary

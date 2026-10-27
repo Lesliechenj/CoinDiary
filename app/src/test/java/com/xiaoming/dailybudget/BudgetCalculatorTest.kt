@@ -59,6 +59,42 @@ class BudgetCalculatorTest {
         assertEquals(1500L, summary.carriedInCents)
         // 今天还能花：15 + 30 - 35 = 10 元
         assertEquals(1000L, summary.todayRemainingCents)
+        // 今天这一天自己的结余：30 - 35 = -5 元（当天超支 5 元）
+        assertEquals(-500L, summary.todayBalanceCents)
+    }
+
+    /**
+     * 首页两个数字必须分别对应两种口径，不能混：
+     * 大字「今日结余」= 只有今天这一天；「存钱罐」= 截至今天的累计。
+     */
+    @Test
+    fun `今日结余只看当天 存钱罐看累计`() {
+        val rules = listOf(defaultRule(30, "2026-10-01"))
+        val transactions = listOf(
+            tx("2026-10-01", 20),
+            tx("2026-10-02", 25),
+            tx("2026-10-03", 35)
+        )
+
+        // 第 2 天：当天 30-25=5，累计 30×2-45=15
+        val day2 = BudgetCalculator.calculate(
+            today = LocalDate.parse("2026-10-02"),
+            transactions = transactions,
+            rules = rules
+        )
+        assertEquals(500L, day2.todayBalanceCents)
+        assertEquals(1500L, day2.todayRemainingCents)
+
+        // 第 3 天：当天超支 -5，累计仍是 10
+        val day3 = BudgetCalculator.calculate(
+            today = LocalDate.parse("2026-10-03"),
+            transactions = transactions,
+            rules = rules
+        )
+        assertEquals(-500L, day3.todayBalanceCents)
+        assertEquals(1000L, day3.todayRemainingCents)
+        // 两个口径的关系：累计 = 昨天为止 + 今天这一天
+        assertEquals(day3.carriedInCents + day3.todayBalanceCents, day3.totalRemainingCents)
     }
 
     /** 改预算：从改的那天起生效，过去的日子仍按旧金额 */
