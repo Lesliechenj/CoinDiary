@@ -1,0 +1,16 @@
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+/build
+/app/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Kotlin 编译缓存
+.kotlin/
+# 本机 SDK 路径（每台机器不同，绝不能提交）
+# local.properties 已在上面忽略

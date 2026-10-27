@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 108 108" role="img" aria-label="碎银集 CoinDiary">
+  <title>碎银集 CoinDiary</title>
+  <rect x="0" y="0" width="108" height="108" rx="24" fill="#17181A"/>
+  <path d="M28,54 A26,26 0 0,1 80,54 A26,26 0 0,1 28,54" fill="none" stroke="#FBFAF6" stroke-width="5.5"/>
+  <path d="M44,41 L54,54 L64,41" fill="none" stroke="#FBFAF6" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M54,54 L54,68" stroke="#FBFAF6" stroke-width="4.2" stroke-linecap="round"/>
+  <path d="M45,57 L63,57" stroke="#FBFAF6" stroke-width="4.2" stroke-linecap="round"/>
+  <path d="M45,62 L63,62" stroke="#FBFAF6" stroke-width="4.2" stroke-linecap="round"/>
+</svg>

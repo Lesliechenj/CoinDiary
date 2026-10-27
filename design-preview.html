@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>碎银集 CoinDiary · 设计预览 V1.3</title>
+<style>
+  :root{
+    --paper:#F2F1EC;
+    --receipt:#FBFAF6;
+    --ink:#17181A;
+    --ink-soft:#6B6F73;
+    --seal:#C0392B;
+    --moss:#2F6B4F;
+    --hair:#DAD8CE;
+    --canvas:#E9E7DF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--canvas);
+    color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding:40px 24px 64px;
+  }
+  .mono{font-family:"SF Mono","Cascadia Mono",ui-monospace,Menlo,Consolas,monospace;letter-spacing:-.02em}
+
+  /* ---------- 页面头部 ---------- */
+  .page-head{max-width:1500px;margin:0 auto 36px}
+  .eyebrow{
+    font-size:11px;letter-spacing:.14em;color:var(--ink-soft);
+    font-weight:600;margin-bottom:10px;
+  }
+  h1{font-size:30px;letter-spacing:-.02em;font-weight:650;margin-bottom:12px}
+  .lede{max-width:62ch;font-size:15px;line-height:1.75;color:var(--ink-soft)}
+  .lede b{color:var(--ink);font-weight:600}
+
+  /* ---------- 三台手机 ---------- */
+  .screens{
+    display:flex;gap:28px;flex-wrap:wrap;
+    max-width:1500px;margin:0 auto;align-items:flex-start;
+  }
+  .phone{
+    width:344px;flex:0 0 auto;
+    background:var(--paper);
+    border:1px solid #CFCCC1;
+    border-radius:22px;
+    overflow:hidden;
+    display:flex;flex-direction:column;
+    height:712px;
+    position:relative;
+  }
+  .caption{
+    font-size:11px;letter-spacing:.1em;color:var(--ink-soft);
+    margin-bottom:8px;font-weight:600;
+  }
+
+  /* 应用抬头 */
+  .appbar{padding:14px 16px 0;flex:0 0 auto}
+  .appbar-row{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:9px}
+  .appbar-title{font-size:19px;font-weight:650;letter-spacing:-.01em}
+  .appbar-date{font-size:10.5px;letter-spacing:.07em;color:var(--ink-soft);padding-bottom:2px}
+  .dash{border-top:1px dashed var(--hair)}
+
+  /* 内容区 */
+  .content{flex:1 1 auto;overflow:hidden;padding:12px 14px 0;display:flex;flex-direction:column;gap:11px}
+
+  /* 票据卡片 */
+  .ticket{
+    background:var(--receipt);
+    border:1px solid var(--hair);
+    border-radius:6px;
+    padding:13px 14px;
+  }
+  .label{
+    font-size:10.5px;letter-spacing:.07em;font-weight:600;color:var(--ink-soft);
+  }
+  .row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+
+  /* 大金额 */
+  .amount{display:flex;align-items:flex-end;gap:4px;margin-top:7px}
+  .amount .cny{font-size:16px;padding-bottom:6px;font-weight:500}
+  .amount .num{font-size:38px;font-weight:700;line-height:1.05;letter-spacing:-.03em}
+  .sub{font-size:11px;color:var(--ink-soft);margin-top:3px}
+
+  /* 印章 */
+  .stamp{
+    border:1.5px solid var(--seal);color:var(--seal);
+    font-size:9.5px;font-weight:650;letter-spacing:.1em;
+    padding:2px 6px;border-radius:2px;
+    transform:rotate(-4deg);white-space:nowrap;
+  }
+
+  /* 三栏指标 */
+  .stats{display:flex;gap:6px;margin-top:11px}
+  .stats > div{flex:1}
+  .stats .v{font-size:13px;font-weight:600;margin-top:3px}
+  .pos{color:var(--moss)}
+  .neg{color:var(--seal)}
+
+  /* 刻度条 */
+  .ticks{display:flex;align-items:flex-end;gap:3px;height:14px;margin-top:11px}
+  .ticks i{flex:1;height:8px;background:#E7E5DC;border-radius:1px;display:block}
+  .ticks i.major{height:14px}
+  .ticks i.on{background:var(--ink)}
+  .ticks i.hot{background:var(--seal)}
+
+  /* 七日柱 */
+  .bars{display:flex;align-items:flex-end;gap:5px;height:56px;margin-top:9px}
+  .bars > div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px}
+  .bars .bar{width:100%;border-radius:1px;background:var(--moss)}
+  .bars .bar.neg{background:var(--seal)}
+  .bars .d{font-size:9px;color:var(--ink-soft)}
+
+  /* ---------- 月视图日历 ---------- */
+  .month-nav{display:flex;align-items:center;gap:4px}
+  .month-nav .arw{width:20px;text-align:center;color:var(--ink-soft);font-size:16px;line-height:1}
+  .m-title{flex:1;text-align:center}
+  .m-title b{display:block;font-size:15.5px;font-weight:650;letter-spacing:-.01em}
+  .m-title span{display:block;font-size:9px;letter-spacing:.06em;color:var(--ink-soft);margin-top:2px}
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+  .cw{text-align:center;font-size:9px;color:var(--ink-soft);padding-bottom:2px}
+  .cc{height:44px;border-radius:3px;display:flex;flex-direction:column;align-items:center;padding:4px 1px 3px}
+  .cc .d{font-size:11px;line-height:1.15}
+  .cc .a{font-size:8.5px;line-height:1.2;height:10px;display:flex;align-items:center}
+  .cc .tk{width:74%;height:2px;border-radius:1px;background:#E7E5DC;margin-top:auto;overflow:hidden}
+  .cc .tk i{display:block;height:2px;border-radius:1px;background:var(--moss)}
+  .cc .tk i.hot{background:var(--seal)}
+  .cc.on{background:var(--ink)}
+  .cc.on .d,.cc.on .a{color:var(--receipt);font-weight:650}
+  .cc.on .tk{background:rgba(251,250,246,.28)}
+  .cc.on .tk i{background:var(--receipt)}
+  .cc.today{box-shadow:inset 0 0 0 1px var(--ink)}
+  .cc.future .d{color:#B7B5AB}
+  .legend{display:flex;align-items:center;gap:10px;margin-top:9px;font-size:9px;color:var(--ink-soft)}
+  .legend .lg{display:flex;align-items:center;gap:4px}
+  .legend .sq{width:6px;height:6px;border:1px solid var(--ink);border-radius:1px;display:block}
+  .cat-row{display:flex;align-items:center;gap:6px;font-size:11px;margin-top:9px}
+  .cat-row .pct{font-size:9px;color:var(--ink-soft);margin-left:auto;margin-right:6px}
+  .cat-bar{height:3px;border-radius:1px;background:#E7E5DC;margin-top:4px;overflow:hidden}
+  .cat-bar i{display:block;height:3px;border-radius:1px}
+
+  /* 条目 */
+  .item{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px dashed var(--hair)}
+  .item:last-child{border-bottom:none}
+  .dot{width:6px;height:6px;border-radius:50%;flex:0 0 auto}
+  .item-main{flex:1;min-width:0}
+  .item-cat{font-size:14px}
+  .item-note{font-size:11px;color:var(--ink-soft);margin-top:1px}
+  .item-amt{font-size:14px;font-weight:600}
+  .x{color:#A8ABA6;font-size:12px;padding-left:2px}
+
+  /* 分组抬头 */
+  .group-head{padding-top:12px}
+  .group-title{font-size:14px;font-weight:650}
+  .group-line{display:flex;justify-content:space-between;align-items:center;margin-top:5px}
+  .group-bal{font-size:13.5px;font-weight:650}
+
+  /* 周几列表 */
+  .wd{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--hair);font-size:14px}
+  .wd:last-child{border-bottom:none}
+  .wd .edit{font-size:11px;color:var(--ink-soft);margin-left:10px}
+
+  /* 按钮 */
+  .btn-outline{
+    width:100%;border:1px solid #C4C1B6;background:transparent;
+    border-radius:5px;padding:9px;font-size:12.5px;color:var(--ink);
+    font-family:inherit;margin-top:10px;
+  }
+  .btn-text{font-size:12.5px;font-weight:600;color:var(--ink)}
+
+  /* FAB */
+  .fab{
+    position:absolute;right:14px;bottom:66px;
+    background:var(--ink);color:var(--receipt);
+    border-radius:6px;padding:11px 15px;font-size:13px;font-weight:500;
+    display:flex;align-items:center;gap:6px;
+  }
+
+  /* 底部导航 */
+  .navbar{
+    flex:0 0 auto;border-top:1px solid var(--hair);background:var(--receipt);
+    display:flex;padding:9px 0 10px;
+  }
+  .navbar div{
+    flex:1;text-align:center;font-size:12px;color:var(--ink-soft);
+    display:flex;flex-direction:column;align-items:center;gap:5px;
+  }
+  .navbar div.on{color:var(--ink);font-weight:650}
+  .navbar i{display:block;width:15px;height:2px;background:transparent;border-radius:1px}
+  .navbar div.on i{background:var(--ink)}
+
+  /* ---------- design tokens ---------- */
+  .tokens{max-width:1500px;margin:44px auto 0}
+  .tokens h2{font-size:15px;letter-spacing:.02em;margin-bottom:14px}
+  .token-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:12px}
+  .swatch{border:1px solid #CFCCC1;border-radius:6px;overflow:hidden;background:var(--receipt)}
+  .swatch .chip{height:52px}
+  .swatch .meta{padding:8px 10px;font-size:11px;color:var(--ink-soft);line-height:1.5}
+  .swatch .meta b{display:block;color:var(--ink);font-size:12px;font-weight:600}
+  .type-scale{margin-top:22px;border-top:1px dashed var(--hair);padding-top:16px}
+  .type-scale p{font-size:12px;color:var(--ink-soft);margin-bottom:8px;line-height:1.7}
+  .type-scale .spec{color:var(--ink)}
+
+  @media (max-width:760px){
+    body{padding:26px 14px 44px}
+    .phone{width:100%;height:auto;min-height:660px}
+    h1{font-size:24px}
+  }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <div class="eyebrow">碎银集 CoinDiary · 设计预览 V1.3</div>
+  <div style="display:flex;align-items:center;gap:18px;margin-bottom:14px">
+    <img src="docs/icon.svg" width="76" height="76" alt="碎银集图标" style="border-radius:17px">
+    <h1 style="margin:0">碎银集</h1>
+  </div>
+  <p class="lede">
+    记账的本质是<b>一张张小票</b>。所以界面用纸面底色、细描边、虚线撕口和等宽数字说话，
+    红色只留给「超支」这一件事。没有渐变、没有阴影、没有大圆角 ——
+    所有注意力都落在那个数字上：<b>今天还能花多少</b>。
+  </p>
+  <p class="lede" style="margin-top:10px">
+    V1.2 新增<b>月视图</b>：整月摊成一张日历，每天的花费直接写在格子里，
+    超支标红、格子下方一条刻度表示用了当天预算的百分之几。点任意一天，
+    下面就展开那天的完整明细 —— <b>哪天花超了、哪天空着，扫一眼就知道</b>。
+  </p>
+  <p class="lede" style="margin-top:10px">
+    V1.3 改名<b>碎银集</b>并重做图标：一枚硬币（深墨底 + 纸白圆环 + ¥）。
+    每天省下的一点钱像碎银子一样攒起来，攒着攒着就是一整笔。
+  </p>
+</div>
+
+<div class="screens">
+
+  <!-- ============ 屏 1：今天 ============ -->
+  <div>
+    <div class="caption">今天</div>
+    <div class="phone">
+      <div class="appbar">
+        <div class="appbar-row">
+          <div class="appbar-title">碎银集</div>
+          <div class="appbar-date">10月27日 周二</div>
+        </div>
+        <div class="dash"></div>
+      </div>
+
+      <div class="content">
+        <div class="ticket">
+          <div class="row">
+            <span class="label">今天还能花</span>
+          </div>
+          <div class="amount">
+            <span class="cny">¥</span>
+            <span class="num mono">25.00</span>
+          </div>
+          <div class="sub">按默认日预算算</div>
+          <div class="dash" style="margin-top:12px"></div>
+          <div class="stats">
+            <div><div class="label">今日预算</div><div class="v mono">30.00</div></div>
+            <div><div class="label">今日已花</div><div class="v mono">20.00</div></div>
+            <div><div class="label">之前结余</div><div class="v mono pos">15.00</div></div>
+          </div>
+          <div class="ticks">
+            <i class="major on"></i><i class="on"></i><i class="on"></i><i class="on"></i>
+            <i class="major on"></i><i class="on"></i><i class="on"></i><i class="on"></i>
+            <i class="major on"></i><i class="on"></i><i class="on"></i><i class="on"></i>
+            <i class="major on"></i><i class="on"></i><i class="on"></i><i class="on"></i>
+            <i class="major"></i><i></i><i></i><i></i>
+            <i class="major"></i><i></i><i></i><i></i>
+          </div>
+        </div>
+
+        <div class="ticket">
+          <div class="row">
+            <span class="label">存钱罐 · 截至昨天</span>
+            <span class="sub" style="margin:0">自 10月24日 起</span>
+          </div>
+          <div class="amount">
+            <span class="num mono pos" style="font-size:26px">15.00</span>
+          </div>
+          <div class="sub">今天还能花 = 存钱罐 + 今日预算 − 今日已花</div>
+          <div class="dash" style="margin-top:11px"></div>
+          <div class="bars">
+            <div><div class="bar" style="height:14px"></div><div class="d">三</div></div>
+            <div><div class="bar" style="height:8px"></div><div class="d">四</div></div>
+            <div><div class="bar" style="height:20px"></div><div class="d">五</div></div>
+            <div><div class="bar neg" style="height:12px"></div><div class="d">六</div></div>
+            <div><div class="bar" style="height:26px"></div><div class="d">日</div></div>
+            <div><div class="bar" style="height:34px"></div><div class="d">一</div></div>
+            <div><div class="bar" style="height:18px"></div><div class="d">二</div></div>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <span class="label">近 7 天每天的结余</span>
+            <span class="label pos">有结余</span>
+          </div>
+        </div>
+
+        <div class="row" style="padding-top:2px">
+          <span style="font-size:14px;font-weight:650">今日花费</span>
+          <span class="label">共 2 笔</span>
+        </div>
+        <div>
+          <div class="item">
+            <span class="dot" style="background:#A65A2E"></span>
+            <div class="item-main"><div class="item-cat">餐饮</div><div class="item-note">午饭</div></div>
+            <span class="item-amt mono">-14.00</span><span class="x">×</span>
+          </div>
+          <div class="item">
+            <span class="dot" style="background:#3A5F8A"></span>
+            <div class="item-main"><div class="item-cat">交通</div><div class="item-note">地铁</div></div>
+            <span class="item-amt mono">-6.00</span><span class="x">×</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="fab">＋ 记一笔</div>
+      <div class="navbar">
+        <div class="on">今天<i></i></div>
+        <div>日历<i></i></div>
+        <div>明细<i></i></div>
+        <div>预算<i></i></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 屏 2：日历（V1.2 新增） ============ -->
+  <div>
+    <div class="caption">日历 · 新增</div>
+    <div class="phone" style="height:auto;min-height:712px">
+      <div class="appbar">
+        <div class="appbar-row">
+          <div class="appbar-title">月视图</div>
+          <div class="appbar-date">10月27日 周二</div>
+        </div>
+        <div class="dash"></div>
+      </div>
+
+      <div class="content">
+        <div class="ticket" style="padding:11px 12px">
+          <div class="month-nav">
+            <span class="arw">‹</span>
+            <div class="m-title"><b>2026 年 10 月</b><span>本月 · 已记 22 天</span></div>
+            <span class="arw">›</span>
+          </div>
+          <div class="dash" style="margin-top:9px"></div>
+          <div class="stats" style="margin-top:9px">
+            <div><div class="label">本月预算</div><div class="v mono">1080.00</div></div>
+            <div><div class="label">本月已花</div><div class="v mono">585.00</div></div>
+            <div><div class="label">本月结余</div><div class="v mono pos">+495.00</div></div>
+          </div>
+          <div class="dash" style="margin-top:9px"></div>
+
+          <div class="cal" style="margin-top:7px">
+            <div class="cw">一</div><div class="cw">二</div><div class="cw">三</div>
+            <div class="cw">四</div><div class="cw">五</div><div class="cw">六</div><div class="cw">日</div>
+
+            <div class="cc"></div><div class="cc"></div><div class="cc"></div>
+            <div class="cc"><span class="d mono">1</span><span class="a mono pos">28</span><div class="tk"><i style="width:93%"></i></div></div>
+            <div class="cc"><span class="d mono">2</span><span class="a mono neg">32</span><div class="tk"><i class="hot" style="width:100%"></i></div></div>
+            <div class="cc"><span class="d mono">3</span><span class="a mono pos">45</span><div class="tk"><i style="width:90%"></i></div></div>
+            <div class="cc"><span class="d mono">4</span><span class="a mono pos">18</span><div class="tk"><i style="width:60%"></i></div></div>
+
+            <div class="cc"><span class="d mono">5</span><span class="a mono pos">22</span><div class="tk"><i style="width:73%"></i></div></div>
+            <div class="cc"><span class="d mono">6</span><span class="a"></span></div>
+            <div class="cc"><span class="d mono">7</span><span class="a mono pos">12</span><div class="tk"><i style="width:40%"></i></div></div>
+            <div class="cc"><span class="d mono">8</span><span class="a mono pos">26</span><div class="tk"><i style="width:87%"></i></div></div>
+            <div class="cc"><span class="d mono">9</span><span class="a mono neg">33</span><div class="tk"><i class="hot" style="width:100%"></i></div></div>
+            <div class="cc"><span class="d mono">10</span><span class="a mono pos">15</span><div class="tk"><i style="width:30%"></i></div></div>
+            <div class="cc"><span class="d mono">11</span><span class="a"></span></div>
+
+            <div class="cc"><span class="d mono">12</span><span class="a mono pos">21</span><div class="tk"><i style="width:70%"></i></div></div>
+            <div class="cc"><span class="d mono">13</span><span class="a mono pos">29</span><div class="tk"><i style="width:97%"></i></div></div>
+            <div class="cc"><span class="d mono">14</span><span class="a mono neg">40</span><div class="tk"><i class="hot" style="width:100%"></i></div></div>
+            <div class="cc"><span class="d mono">15</span><span class="a mono pos">24</span><div class="tk"><i style="width:80%"></i></div></div>
+            <div class="cc"><span class="d mono">16</span><span class="a mono pos">17</span><div class="tk"><i style="width:57%"></i></div></div>
+            <div class="cc"><span class="d mono">17</span><span class="a"></span></div>
+            <div class="cc"><span class="d mono">18</span><span class="a mono pos">20</span><div class="tk"><i style="width:67%"></i></div></div>
+
+            <div class="cc"><span class="d mono">19</span><span class="a mono neg">35</span><div class="tk"><i class="hot" style="width:100%"></i></div></div>
+            <div class="cc"><span class="d mono">20</span><span class="a mono pos">20</span><div class="tk"><i style="width:67%"></i></div></div>
+            <div class="cc"><span class="d mono">21</span><span class="a"></span></div>
+            <div class="cc"><span class="d mono">22</span><span class="a mono pos">25</span><div class="tk"><i style="width:83%"></i></div></div>
+            <div class="cc"><span class="d mono">23</span><span class="a mono pos">18</span><div class="tk"><i style="width:60%"></i></div></div>
+            <div class="cc"><span class="d mono">24</span><span class="a mono pos">50</span><div class="tk"><i style="width:100%"></i></div></div>
+            <div class="cc"><span class="d mono">25</span><span class="a"></span></div>
+
+            <div class="cc"><span class="d mono">26</span><span class="a mono neg">35</span><div class="tk"><i class="hot" style="width:100%"></i></div></div>
+            <div class="cc on today"><span class="d mono">27</span><span class="a mono">20</span><div class="tk"><i style="width:67%"></i></div></div>
+            <div class="cc future"><span class="d mono">28</span><span class="a"></span></div>
+            <div class="cc future"><span class="d mono">29</span><span class="a"></span></div>
+            <div class="cc future"><span class="d mono">30</span><span class="a"></span></div>
+            <div class="cc future"><span class="d mono">31</span><span class="a"></span></div>
+            <div class="cc"></div>
+          </div>
+
+          <div class="legend">
+            <span class="lg"><span class="dot" style="background:var(--moss)"></span>有结余</span>
+            <span class="lg"><span class="dot" style="background:var(--seal)"></span>超支</span>
+            <span class="lg"><span class="sq"></span>今天</span>
+            <span style="margin-left:auto">点日期看明细</span>
+          </div>
+        </div>
+
+        <div class="ticket">
+          <div class="row">
+            <span style="font-size:14px;font-weight:650">10月27日 周二</span>
+            <span class="label">2 笔</span>
+          </div>
+          <div class="stats" style="margin-top:10px">
+            <div><div class="label">当天预算</div><div class="v mono">30.00</div></div>
+            <div><div class="label">当天已花</div><div class="v mono">20.00</div></div>
+            <div><div class="label">当天结余</div><div class="v mono pos">+10.00</div></div>
+          </div>
+          <div class="dash" style="margin-top:10px"></div>
+          <div class="item">
+            <span class="dot" style="background:#A65A2E"></span>
+            <div class="item-main"><div class="item-cat">餐饮</div><div class="item-note">午饭</div></div>
+            <span class="item-amt mono">-14.00</span><span class="x">×</span>
+          </div>
+          <div class="item">
+            <span class="dot" style="background:#3A5F8A"></span>
+            <div class="item-main"><div class="item-cat">交通</div><div class="item-note">地铁</div></div>
+            <span class="item-amt mono">-6.00</span><span class="x">×</span>
+          </div>
+          <div class="row" style="margin-top:4px"><span></span><span class="btn-text">＋ 在这天记一笔</span></div>
+        </div>
+
+        <div class="ticket">
+          <div class="row">
+            <span class="label">本月花在哪儿</span>
+            <span class="label">共 22 天有消费</span>
+          </div>
+          <div class="cat-row">
+            <span class="dot" style="background:#A65A2E"></span><span>餐饮</span>
+            <span class="pct mono">41%</span><b class="mono" style="font-size:11px">240.00</b>
+          </div>
+          <div class="cat-bar"><i style="width:100%;background:#A65A2E"></i></div>
+          <div class="cat-row">
+            <span class="dot" style="background:#8C3B5A"></span><span>购物</span>
+            <span class="pct mono">26%</span><b class="mono" style="font-size:11px">150.00</b>
+          </div>
+          <div class="cat-bar"><i style="width:63%;background:#8C3B5A"></i></div>
+          <div class="cat-row">
+            <span class="dot" style="background:#3A5F8A"></span><span>交通</span>
+            <span class="pct mono">18%</span><b class="mono" style="font-size:11px">105.00</b>
+          </div>
+          <div class="cat-bar"><i style="width:44%;background:#3A5F8A"></i></div>
+        </div>
+        <div style="height:58px"></div>
+      </div>
+
+      <div class="fab">＋ 记一笔</div>
+      <div class="navbar">
+        <div>今天<i></i></div>
+        <div class="on">日历<i></i></div>
+        <div>明细<i></i></div>
+        <div>预算<i></i></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 屏 3：明细 ============ -->
+  <div>
+    <div class="caption">明细</div>
+    <div class="phone">
+      <div class="appbar">
+        <div class="appbar-row">
+          <div class="appbar-title">明细</div>
+          <div class="appbar-date">10月27日 周二</div>
+        </div>
+        <div class="dash"></div>
+      </div>
+
+      <div class="content" style="gap:0;padding-top:4px">
+        <div class="group-head">
+          <div class="group-line"><span class="group-title">10月27日 周二</span><span class="label">预算 30.00</span></div>
+          <div class="group-line">
+            <span class="label">花 20.00</span>
+            <span class="group-bal mono pos">+10.00</span>
+          </div>
+          <div class="dash" style="margin-top:6px"></div>
+        </div>
+        <div class="item">
+          <span class="dot" style="background:#A65A2E"></span>
+          <div class="item-main"><div class="item-cat">餐饮</div><div class="item-note">午饭</div></div>
+          <span class="item-amt mono">-14.00</span><span class="x">×</span>
+        </div>
+        <div class="item">
+          <span class="dot" style="background:#3A5F8A"></span>
+          <div class="item-main"><div class="item-cat">交通</div><div class="item-note">地铁</div></div>
+          <span class="item-amt mono">-6.00</span><span class="x">×</span>
+        </div>
+
+        <div class="group-head">
+          <div class="group-line"><span class="group-title">10月26日 周一</span><span class="label">预算 30.00</span></div>
+          <div class="group-line">
+            <span class="label">花 35.00</span>
+            <span class="group-bal mono neg">−5.00</span>
+          </div>
+          <div class="dash" style="margin-top:6px"></div>
+        </div>
+        <div class="item">
+          <span class="dot" style="background:#A65A2E"></span>
+          <div class="item-main"><div class="item-cat">餐饮</div><div class="item-note">和朋友吃饭</div></div>
+          <span class="item-amt mono">-35.00</span><span class="x">×</span>
+        </div>
+
+        <div class="group-head">
+          <div class="group-line"><span class="group-title">10月24日 周六</span><span class="label">预算 50.00</span></div>
+          <div class="group-line">
+            <span class="label">花 50.00</span>
+            <span class="group-bal mono">0.00</span>
+          </div>
+          <div class="dash" style="margin-top:6px"></div>
+        </div>
+        <div class="item">
+          <span class="dot" style="background:#8C3B5A"></span>
+          <div class="item-main"><div class="item-cat">购物</div><div class="item-note">日用品</div></div>
+          <span class="item-amt mono">-50.00</span><span class="x">×</span>
+        </div>
+      </div>
+
+      <div class="navbar">
+        <div>今天<i></i></div>
+        <div>日历<i></i></div>
+        <div class="on">明细<i></i></div>
+        <div>预算<i></i></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 屏 4：预算 ============ -->
+  <div>
+    <div class="caption">预算</div>
+    <div class="phone">
+      <div class="appbar">
+        <div class="appbar-row">
+          <div class="appbar-title">预算设置</div>
+          <div class="appbar-date">10月27日 周二</div>
+        </div>
+        <div class="dash"></div>
+      </div>
+
+      <div class="content">
+        <div class="ticket">
+          <div class="row">
+            <span class="label">默认日预算</span>
+            <span class="btn-text">修改</span>
+          </div>
+          <div class="amount" style="margin-top:5px">
+            <span class="cny" style="font-size:14px;color:var(--ink-soft)">¥</span>
+            <span class="num mono" style="font-size:27px">30.00</span>
+            <span class="sub" style="padding-bottom:6px">/ 天</span>
+          </div>
+          <div class="sub">改完从今天起生效，之前的日子仍按当时的金额算</div>
+        </div>
+
+        <div class="ticket">
+          <div class="label">按星期几</div>
+          <div class="sub" style="margin-top:4px">没设置的星期几跟随默认预算</div>
+          <div class="dash" style="margin-top:9px"></div>
+          <div class="wd"><span>周一</span><span><b class="mono" style="font-size:13px">30.00</b><span class="edit">改</span></span></div>
+          <div class="wd"><span>周二</span><span><b class="mono" style="font-size:13px">30.00</b><span class="edit">改</span></span></div>
+          <div class="wd"><span>周三</span><span><b class="mono" style="font-size:13px">30.00</b><span class="edit">改</span></span></div>
+          <div class="wd"><span>周四</span><span><b class="mono" style="font-size:13px">30.00</b><span class="edit">改</span></span></div>
+          <div class="wd"><span>周五</span><span><b class="mono" style="font-size:13px">30.00</b><span class="edit">改</span></span></div>
+          <div class="wd"><span>周六</span><span><b class="mono" style="font-size:13px">50.00</b><span class="edit">改</span></span></div>
+          <div class="wd"><span>周日</span><span><span class="label">跟随默认</span><span class="edit">改</span></span></div>
+        </div>
+
+        <div class="ticket">
+          <div class="label">单独设置某一天</div>
+          <div class="sub" style="margin-top:4px">只影响那一天，优先级最高。比如朋友生日要聚餐</div>
+          <button class="btn-outline">选一天设置预算</button>
+          <div class="row" style="margin-top:9px">
+            <span style="font-size:13px">10月31日 周六</span>
+            <span><b class="mono" style="font-size:13px">100.00</b><span class="x">×</span></span>
+          </div>
+        </div>
+
+        <div class="ticket">
+          <div class="label">预算怎么取值</div>
+          <div style="font-size:13.5px;margin-top:7px">单独某天　＞　周几　＞　默认日预算</div>
+          <div class="sub" style="margin-top:7px">当天没花完的钱自动进存钱罐；超支的话从存钱罐里扣。</div>
+        </div>
+      </div>
+
+      <div class="navbar">
+        <div>今天<i></i></div>
+        <div>日历<i></i></div>
+        <div>明细<i></i></div>
+        <div class="on">预算<i></i></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ 设计 token ============ -->
+<div class="tokens">
+  <h2>设计 token</h2>
+  <div class="token-grid">
+    <div class="swatch"><div class="chip" style="background:#F2F1EC"></div><div class="meta"><b>Paper 纸面</b>#F2F1EC 页面底色</div></div>
+    <div class="swatch"><div class="chip" style="background:#FBFAF6"></div><div class="meta"><b>Receipt 票据白</b>#FBFAF6 卡片</div></div>
+    <div class="swatch"><div class="chip" style="background:#17181A"></div><div class="meta"><b>Ink 墨</b>#17181A 主文字</div></div>
+    <div class="swatch"><div class="chip" style="background:#6B6F73"></div><div class="meta"><b>Ink soft 次级</b>#6B6F73 标签说明</div></div>
+    <div class="swatch"><div class="chip" style="background:#2F6B4F"></div><div class="meta"><b>Moss 苔绿</b>#2F6B4F 结余</div></div>
+    <div class="swatch"><div class="chip" style="background:#C0392B"></div><div class="meta"><b>Seal 印章红</b>#C0392B 只用于超支和删除</div></div>
+  </div>
+
+  <div class="type-scale">
+    <p><span class="spec mono" style="font-size:30px;font-weight:700">¥25.00</span>　金额：等宽字体 + 粗字重，竖排自动对齐</p>
+    <p><span class="spec" style="font-size:19px;font-weight:650">碎银集</span>　标题：无衬线 20sp，字距收紧 −0.2</p>
+    <p><span class="spec" style="font-size:10.5px;letter-spacing:.07em;color:#6B6F73;font-weight:600">今天还能花</span>　标签：11sp，字距 +0.7，全部小写视觉重量</p>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 界面全部由 Compose 绘制，这里只提供一个无标题栏的基础主题 -->
+    <style name="Theme.DailyBudget" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- 状态栏与页面纸面同色，视觉上融为一体 -->
+        <item name="android:statusBarColor">#F2F1EC</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">#FBFAF6</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowBackground">#F2F1EC</item>
+    </style>
+</resources>

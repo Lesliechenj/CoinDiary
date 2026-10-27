@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 桌面显示的中文名。英文名 CoinDiary 用于仓库名与品牌 -->
+    <string name="app_name">碎银集</string>
+</resources>
