@@ -149,11 +149,12 @@
 
 ### 方案 B：GitHub 云端自动打包
 
-1. 在手机上或电脑上，去 GitHub 新建一个空仓库（Private 也可以）
-2. 把 `DailyBudgetApp` 文件夹里的所有文件上传上去（网页拖拽即可）
-3. 打开仓库的 **Actions** 标签页 —— 会自动开始编译
-4. 等 3~5 分钟，点进绿色的那一次运行，页面底部 **Artifacts** 下载 `DailyBudget-apk`
-5. 解压得到 `app-debug.apk`，传到手机上安装
+本仓库已经配好流水线，每次 push 都会自动编译，不用装任何开发环境：
+
+1. 打开仓库的 **Actions** 标签页
+2. 点进最近一次绿色（成功）的运行
+3. 页面底部 **Artifacts** 里下载 `CoinDiary-apk`
+4. 解压得到 `app-debug.apk`，传到手机上安装
 
 流水线文件在 `.github/workflows/build-apk.yml`，它会先跑单元测试再打包，
 测试挂了就不会出 APK，等于帮你把关。
@@ -161,7 +162,7 @@
 ### 方案 C：用 Android Studio 打开
 
 1. 下载安装 [Android Studio](https://developer.android.com/studio)（约 3GB）
-2. **先把 `DailyBudgetApp` 整个文件夹复制到纯英文路径**，例如 `D:\DailyBudgetApp`
+2. **先把项目复制到纯英文路径**，例如 `D:\CoinDiary`（`git clone` 到一个英文路径下即可）
    （原因见下方「中文路径的坑」，这一步很容易被忽略）
 3. `File → Open` 选择该文件夹
 4. 等它自动下载 Gradle 8.9 和依赖（第一次比较慢，需要能访问 Google 的仓库）
@@ -189,7 +190,7 @@ GitHub Actions 用的是 Linux，完全没有这个问题。
 ## 六、代码结构（按阅读顺序看）
 
 ```
-DailyBudgetApp/
+CoinDiary/
 ├── app/src/main/java/com/xiaoming/dailybudget/
 │   ├── logic/BudgetCalculator.kt      ★ 核心算法，先看这个
 │   ├── data/
@@ -207,7 +208,13 @@ DailyBudgetApp/
 │       ├── AddTransactionDialog.kt     记一笔弹窗
 │       ├── Components.kt               公共小组件
 │       └── theme/Theme.kt              配色
+├── app/src/main/res/
+│   ├── drawable/ic_launcher_foreground.xml   图标前景（硬币 + ¥）
+│   └── mipmap-anydpi-v26/ic_launcher.xml     自适应图标入口
 ├── app/src/test/java/.../BudgetCalculatorTest.kt   ★ 算法测试
+├── apk/CoinDiary-v1.3-debug.apk        已编译好的安装包
+├── docs/icon.svg                       图标源文件（可做仓库头像）
+├── design-preview.html                 界面视觉稿（浏览器直接打开）
 └── .github/workflows/build-apk.yml     云端打包流水线
 ```
 
