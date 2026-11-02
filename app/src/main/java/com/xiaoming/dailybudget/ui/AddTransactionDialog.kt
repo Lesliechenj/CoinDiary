@@ -12,7 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
+import com.xiaoming.dailybudget.ui.theme.AppMono
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -62,7 +62,7 @@ fun AddTransactionDialog(
                     label = { Text("金额（元）") },
                     singleLine = true,
                     textStyle = MaterialTheme.typography.bodyLarge.copy(
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = AppMono,
                         fontWeight = FontWeight.SemiBold
                     ),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -113,7 +113,8 @@ fun AddTransactionDialog(
                 OutlinedTextField(
                     value = note,
                     onValueChange = { note = it.take(30) },
-                    label = { Text("备注（可不填）") },
+                    label = { Text("备注") },
+                    placeholder = { Text("选填") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )

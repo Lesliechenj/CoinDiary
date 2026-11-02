@@ -13,8 +13,8 @@ android {
         applicationId = "com.xiaoming.dailybudget"
         minSdk = 26          // Android 8.0 及以上
         targetSdk = 34
-        versionCode = 5
-        versionName = "1.4"
+        versionCode = 6
+        versionName = "1.5"
     }
 
     buildTypes {
@@ -39,6 +39,13 @@ android {
     buildFeatures {
         compose = true
     }
+}
+
+// 导出数据库表结构（schemas/*.json）。
+// 作用：以后改表时，Room 会拿新结构跟旧结构比对，迁移写错会当场报错，
+// 而不是等到用户升级后才发现「打不开 App」。这一版只用来核对心愿单表的建表语句。
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {

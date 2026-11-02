@@ -30,10 +30,14 @@ import kotlin.math.abs
 /**
  * 首页。整个页面只回答一个问题：今天还能花多少。
  * 所以最大的字只留给那个数字，其余信息按票据分栏排在下面。
+ *
+ * @param monthToDate 本月 1 号到今天的统计，存钱罐用它。
+ *                    注意不是整月 —— 钱按天到账，未来的日子还没到，不该提前算进存钱罐。
  */
 @Composable
 fun HomeScreen(
     summary: BudgetCalculator.Summary,
+    monthToDate: BudgetCalculator.MonthStat,
     rules: List<BudgetRuleEntity>,
     todayTransactions: List<TransactionEntity>,
     onDelete: (TransactionEntity) -> Unit,
@@ -58,11 +62,11 @@ fun HomeScreen(
 
     // 今日预算从哪条规则来的
     val sourceText = when {
-        rules.any { it.type == TYPE_DATE && it.specificDate == todayKey } -> "今天用的是单独设置的预算"
+        rules.any { it.type == TYPE_DATE && it.specificDate == todayKey } -> "今天单独设了预算"
         rules.any {
             it.type == TYPE_WEEKDAY && it.weekday == today.dayOfWeek.value && it.effectiveDate <= todayKey
-        } -> "今天按${weekdayText(today.dayOfWeek.value)}的预算算"
-        else -> "按默认日预算算"
+        } -> "按${weekdayText(today.dayOfWeek.value)}的预算"
+        else -> "按默认日预算"
     }
 
     var pendingDelete by remember { mutableStateOf<TransactionEntity?>(null) }
@@ -136,23 +140,23 @@ fun HomeScreen(
             }
         }
 
-        // ---------- 存钱罐（截至今日） ----------
+        // ---------- 存钱罐（本月至今） ----------
         item {
             TicketCard {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    SectionLabel("存钱罐 · 截至今日")
+                    SectionLabel("存钱罐 · 本月至今")
                     Spacer(Modifier.weight(1f))
                     Text(
-                        text = "自 ${summary.startDate.toChineseDate()} 起",
+                        text = dateRangeText(monthToDate),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 Spacer(Modifier.height(8.dp))
                 MoneyText(
-                    text = centsToPlainYuan(summary.totalRemainingCents),
+                    text = centsToPlainYuan(monthToDate.balanceCents),
                     fontSize = 28.sp,
-                    color = if (summary.totalRemainingCents < 0L) {
+                    color = if (monthToDate.balanceCents < 0L) {
                         MaterialTheme.colorScheme.error
                     } else {
                         MaterialTheme.colorScheme.secondary
@@ -160,7 +164,8 @@ fun HomeScreen(
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    text = "存钱罐 = 之前结余 + 今日结余",
+                    text = "本月预算 ${centsToPlainYuan(monthToDate.budgetCents)}" +
+                        " − 已花 ${centsToPlainYuan(monthToDate.spentCents)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -170,12 +175,12 @@ fun HomeScreen(
                 WeekBars(summary.days)
                 Spacer(Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    SectionLabel("近 7 天每天的结余")
+                    SectionLabel("近 7 天结余")
                     Spacer(Modifier.weight(1f))
                     Text(
-                        text = if (summary.totalRemainingCents < 0L) "已透支" else "有结余",
+                        text = if (monthToDate.balanceCents < 0L) "超支" else "有结余",
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (summary.totalRemainingCents < 0L) {
+                        color = if (monthToDate.balanceCents < 0L) {
                             MaterialTheme.colorScheme.error
                         } else {
                             MaterialTheme.colorScheme.secondary
@@ -221,6 +226,14 @@ fun HomeScreen(
             }
         )
     }
+}
+
+/** 存钱罐右上角的小字：本月 1 号到今天，提醒这个数字的时间范围 */
+private fun dateRangeText(stat: BudgetCalculator.MonthStat): String {
+    val last = stat.lastDate ?: return "${stat.yearMonth.monthValue} 月"
+    val month = last.monthValue
+    // 月初第一天别写成「1–1 日」
+    return if (last.dayOfMonth == 1) "$month 月 1 日" else "$month 月 1–${last.dayOfMonth} 日"
 }
 
 /**

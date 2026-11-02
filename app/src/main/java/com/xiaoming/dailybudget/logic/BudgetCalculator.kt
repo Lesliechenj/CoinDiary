@@ -141,17 +141,20 @@ object BudgetCalculator {
     /** 某个月的完整统计（月视图用） */
     data class MonthStat(
         val yearMonth: YearMonth,
-        /** 这个月每一天，按日期正序 */
+        /** 这个月每一天，按日期正序（用 [until] 收窄时只到这里） */
         val days: List<DayStat>,
-        /** 整月分到的预算合计 */
+        /** 这段时间分到的预算合计 */
         val budgetCents: Long,
-        /** 整月花掉的合计 */
+        /** 这段时间花掉的合计 */
         val spentCents: Long,
         /** 有消费的天数（没花钱的日子不计入日均） */
         val activeDays: Int
     ) {
-        /** 整月结余：只算本月自己的预算与支出，不含上月结转 */
+        /** 这段时间的结余：只算本月自己的预算与支出，不含上月结转 */
         val balanceCents: Long get() = budgetCents - spentCents
+
+        /** 统计到的最后一天；空列表时为 null */
+        val lastDate: LocalDate? get() = days.lastOrNull()?.date
 
         /** 花得最多的那一天，没花钱则为 null */
         val busiestDay: DayStat?
@@ -165,14 +168,19 @@ object BudgetCalculator {
     /**
      * 算出某个月每一天的预算与支出。
      *
-     * 和 [calculate] 的区别：这里不滚存、不截断到今天，就是把整月的
-     * 「每天分到多少 / 花了多少」摊开来，用于日历格子。
-     * 未来的日子也会算出一个预算值（按当前规则推演），但支出为 0。
+     * 和 [calculate] 的区别：这里不滚存，就是把整月的「每天分到多少 / 花了多少」
+     * 摊开来，用于日历格子。未来的日子也会算出一个预算值（按当前规则推演），但支出为 0。
+     *
+     * @param until 只统计到这一天为止（含）。传 null 就是整月。
+     *              传今天，得到的就是「本月 1 号至今」—— 存钱罐用的就是这个口径：
+     *              11 月的存钱罐只装 11 月 1 日到今天的钱，不会把后面 28 天还没到的
+     *              预算提前算进来，也不会把 10 月的结余混进来。
      */
     fun monthStat(
         yearMonth: YearMonth,
         transactions: List<TransactionEntity>,
-        rules: List<BudgetRuleEntity>
+        rules: List<BudgetRuleEntity>,
+        until: LocalDate? = null
     ): MonthStat {
         val keyPrefix = yearMonth.toString() // 形如 2026-10
 
@@ -181,7 +189,15 @@ object BudgetCalculator {
             .groupBy { it.date }
             .mapValues { (_, list) -> list.sumOf { it.amountCents } }
 
-        val days = (1..yearMonth.lengthOfMonth()).map { day ->
+        // until 落在别的月份时：比这个月早 → 一天都不算；比这个月晚 → 等于整月
+        val lastDay = when {
+            until == null -> yearMonth.lengthOfMonth()
+            YearMonth.from(until).isBefore(yearMonth) -> 0
+            YearMonth.from(until).isAfter(yearMonth) -> yearMonth.lengthOfMonth()
+            else -> minOf(until.dayOfMonth, yearMonth.lengthOfMonth())
+        }
+
+        val days = (1..lastDay).map { day ->
             val date = yearMonth.atDay(day)
             DayStat(
                 date = date,
@@ -198,6 +214,20 @@ object BudgetCalculator {
             activeDays = days.count { it.spentCents > 0L }
         )
     }
+
+    /**
+     * 「本月 1 号至今」的统计 —— 首页存钱罐和心愿单的「本月可花」都用这个。
+     *
+     * 一定要和整月口径区分开：
+     *   整月   = 1 号到月底，把还没到的日子预算也提前加进去（数字虚高）
+     *   至今   = 1 号到今天，只算真正到手的预算、真正花掉的钱
+     * 用户看存钱罐是为了决定「今天还能不能买」，所以必须是至今。
+     */
+    fun monthToDateStat(
+        today: LocalDate,
+        transactions: List<TransactionEntity>,
+        rules: List<BudgetRuleEntity>
+    ): MonthStat = monthStat(YearMonth.from(today), transactions, rules, until = today)
 
     /** 某个月的分类合计，金额从高到低 */
     fun monthCategoryTotals(

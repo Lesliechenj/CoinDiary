@@ -28,6 +28,7 @@ import com.xiaoming.dailybudget.ui.CalendarScreen
 import com.xiaoming.dailybudget.ui.DashedDivider
 import com.xiaoming.dailybudget.ui.DetailScreen
 import com.xiaoming.dailybudget.ui.HomeScreen
+import com.xiaoming.dailybudget.ui.WishScreen
 import com.xiaoming.dailybudget.ui.theme.DailyBudgetTheme
 import com.xiaoming.dailybudget.util.toChineseDate
 import java.time.LocalDate
@@ -43,18 +44,24 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/** 底部四项只要文字，不要图标药丸 —— 票据风格不需要 Material 的胶囊指示器 */
-private val TABS = listOf("今天", "日历", "明细", "预算")
+/** 底部五项只要文字，不要图标药丸 —— 票据风格不需要 Material 的胶囊指示器 */
+private val TABS = listOf("今天", "日历", "心愿", "明细", "预算")
 
-private val TAB_TITLES = listOf("碎银集", "月视图", "明细", "预算设置")
+private val TAB_TITLES = listOf("碎银集", "月视图", "心愿单", "明细", "预算设置")
+
+/** 预算页不需要「记一笔」按钮，其他页都要 */
+private const val TAB_BUDGET = 4
 
 @Composable
 private fun AppRoot() {
     val viewModel: AppViewModel = viewModel()
 
     val summary by viewModel.summary.collectAsStateWithLifecycle()
+    // 首页存钱罐和心愿单都看「本月 1 号至今」，不是整月
+    val monthToDate by viewModel.monthToDateStat.collectAsStateWithLifecycle()
     val transactions by viewModel.transactions.collectAsStateWithLifecycle()
     val rules by viewModel.rules.collectAsStateWithLifecycle()
+    val wishes by viewModel.wishes.collectAsStateWithLifecycle()
 
     var tab by rememberSaveable { mutableStateOf(0) }
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
@@ -78,7 +85,7 @@ private fun AppRoot() {
             AppBottomBar(selected = tab, onSelect = { tab = it })
         },
         floatingActionButton = {
-            if (tab != 3) {
+            if (tab != TAB_BUDGET) {
                 ExtendedFloatingActionButton(
                     onClick = {
                         addDateKey = null
@@ -101,6 +108,7 @@ private fun AppRoot() {
             when (tab) {
                 0 -> HomeScreen(
                     summary = summary,
+                    monthToDate = monthToDate,
                     rules = rules,
                     todayTransactions = todayTransactions,
                     onDelete = viewModel::deleteTransaction
@@ -114,7 +122,20 @@ private fun AppRoot() {
                         showAddDialog = true
                     }
                 )
-                2 -> DetailScreen(
+                2 -> WishScreen(
+                    wishes = wishes,
+                    monthBalanceCents = monthToDate.balanceCents,
+                    monthBudgetCents = monthToDate.budgetCents,
+                    monthSpentCents = monthToDate.spentCents,
+                    monthThroughDay = monthToDate.lastDate?.dayOfMonth ?: LocalDate.now().dayOfMonth,
+                    totalRemainingCents = summary.totalRemainingCents,
+                    startDate = summary.startDate,
+                    onAdd = viewModel::addWish,
+                    onAchieve = viewModel::achieveWish,
+                    onUndo = viewModel::undoWish,
+                    onDelete = viewModel::deleteWish
+                )
+                3 -> DetailScreen(
                     transactions = transactions,
                     rules = rules,
                     onDelete = viewModel::deleteTransaction

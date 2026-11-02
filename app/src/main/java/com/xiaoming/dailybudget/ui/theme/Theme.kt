@@ -71,28 +71,42 @@ private val DarkColors = darkColorScheme(
 /**
  * 字阶：标题收紧字距，金额统一等宽。
  * 等宽是这套设计的骨架 —— 数字竖着对齐，像打印出来的小票。
+ *
+ * 全部字阶都显式绑定 AppSans（思源黑体），不再依赖手机自带字体；
+ * 否则小米、华为、OPPO 各自换一套系统字，界面在不同手机上就不一样了。
  */
 private val AppTypography = Typography(
+    displayLarge = TextStyle(fontFamily = AppSans, fontSize = 46.sp, fontWeight = FontWeight.Medium, letterSpacing = (-1).sp),
+    displayMedium = TextStyle(fontFamily = AppSans, fontSize = 40.sp, fontWeight = FontWeight.Medium, letterSpacing = (-0.8).sp),
+    displaySmall = TextStyle(fontFamily = AppSans, fontSize = 34.sp, fontWeight = FontWeight.Medium, letterSpacing = (-0.5).sp),
     headlineLarge = TextStyle(
-        fontFamily = FontFamily.Monospace,
-        fontWeight = FontWeight.Bold,
+        fontFamily = AppMono,
+        fontWeight = FontWeight.Medium,
         fontSize = 42.sp,
         letterSpacing = (-1).sp
     ),
+    headlineMedium = TextStyle(fontFamily = AppSans, fontSize = 26.sp, fontWeight = FontWeight.Medium),
+    headlineSmall = TextStyle(fontFamily = AppSans, fontSize = 22.sp, fontWeight = FontWeight.Medium),
     titleLarge = TextStyle(
+        fontFamily = AppSans,
         fontSize = 20.sp,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Medium,
         letterSpacing = (-0.2).sp
     ),
     titleMedium = TextStyle(
+        fontFamily = AppSans,
         fontSize = 15.sp,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Medium,
         letterSpacing = 0.sp
     ),
-    bodyLarge = TextStyle(fontSize = 15.sp),
-    bodyMedium = TextStyle(fontSize = 14.sp),
-    bodySmall = TextStyle(fontSize = 12.sp),
+    titleSmall = TextStyle(fontFamily = AppSans, fontSize = 14.sp, fontWeight = FontWeight.Medium),
+    bodyLarge = TextStyle(fontFamily = AppSans, fontSize = 15.sp),
+    bodyMedium = TextStyle(fontFamily = AppSans, fontSize = 14.sp),
+    bodySmall = TextStyle(fontFamily = AppSans, fontSize = 12.sp),
+    labelLarge = TextStyle(fontFamily = AppSans, fontSize = 13.sp, fontWeight = FontWeight.Medium),
+    labelMedium = TextStyle(fontFamily = AppSans, fontSize = 12.sp, fontWeight = FontWeight.Medium),
     labelSmall = TextStyle(
+        fontFamily = AppSans,
         fontSize = 11.sp,
         fontWeight = FontWeight.Medium,
         letterSpacing = 0.7.sp

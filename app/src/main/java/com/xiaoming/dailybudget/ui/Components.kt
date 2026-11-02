@@ -17,7 +17,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.text.font.FontFamily
+import com.xiaoming.dailybudget.ui.theme.AppMono
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.TextUnit
@@ -100,7 +100,7 @@ fun MoneyText(
         fontSize = fontSize,
         color = color,
         fontWeight = weight,
-        fontFamily = FontFamily.Monospace,
+        fontFamily = AppMono,
         letterSpacing = (-0.3).sp
     )
 }
@@ -154,7 +154,7 @@ fun AmountInputDialog(
                     },
                     label = { Text("金额（元）") },
                     singleLine = true,
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = AppMono),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                 )
             }

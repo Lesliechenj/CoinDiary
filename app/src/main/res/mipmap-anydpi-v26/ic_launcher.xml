@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 自适应图标（Android 8.0+）：系统会按各家桌面的形状自己裁切 -->
+<!-- 自适应图标（Android 8.0+）：整张插画作为背景铺满 108dp 网格，
+     系统按各家桌面的形状（圆形 / 方圆形 / 水滴屏）自行裁切。
+     前景层留空，避免盖住插画本身。 -->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@color/icon_background" />
-    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+    <background android:drawable="@mipmap/ic_launcher_bg" />
+    <foreground android:drawable="@drawable/ic_launcher_blank" />
 </adaptive-icon>

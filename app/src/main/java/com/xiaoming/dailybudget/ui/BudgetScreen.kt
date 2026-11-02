@@ -88,7 +88,7 @@ fun BudgetScreen(
                 }
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    text = "改完从今天起生效，之前的日子仍按当时的金额算",
+                    text = "改完从今天起生效，之前的日子不受影响",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -148,7 +148,7 @@ fun BudgetScreen(
                 SectionLabel("单独设置某一天")
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = "只影响那一天，优先级最高。比如朋友生日要聚餐",
+                    text = "只影响那一天，比如朋友生日聚餐",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -201,15 +201,16 @@ fun BudgetScreen(
         // ---------- 优先级说明 ----------
         item {
             TicketCard {
-                SectionLabel("预算怎么取值")
+                SectionLabel("预算怎么算")
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    text = "单独某天  ＞  周几  ＞  默认日预算",
-                    style = MaterialTheme.typography.bodyLarge
+                    text = "单独某天  ＞  按星期几  ＞  默认日预算",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    text = "当天没花完的钱自动进存钱罐；超支的话从存钱罐里扣。",
+                    text = "当天没花完的钱自动进存钱罐，超支就从存钱罐里扣。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -270,7 +271,7 @@ fun BudgetScreen(
     pickedDate?.let { date ->
         AmountInputDialog(
             title = "${date.toChineseDate()}的预算",
-            subtitle = "只影响这一天，优先于周几和默认预算",
+            subtitle = "只影响这一天，其他日子照旧",
             onDismiss = { pickedDate = null },
             onConfirm = { cents ->
                 onSetDate(date, cents)
@@ -281,7 +282,7 @@ fun BudgetScreen(
 
     pendingDeleteRule?.let { rule ->
         DeleteConfirmDialog(
-            message = "删除这条预算规则？删除后那一天会退回使用上一级预算。",
+            message = "删除后，这一天改按周几或默认预算算。",
             onDismiss = { pendingDeleteRule = null },
             onConfirm = {
                 onDeleteRule(rule)

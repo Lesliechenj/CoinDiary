@@ -239,6 +239,81 @@ class BudgetCalculatorTest {
         assertEquals(null, stat.busiestDay)
     }
 
+    /**
+     * 存钱罐的口径：本月 1 号至今，不是整月。
+     * 10 月 3 号看存钱罐，只该有 3 天的预算，不是 31 天的。
+     */
+    @Test
+    fun `本月至今只算到今天`() {
+        val rules = listOf(defaultRule(30, "2026-10-01"))
+        val transactions = listOf(
+            tx("2026-10-01", 20),
+            tx("2026-10-02", 25),
+            tx("2026-10-03", 35)
+        )
+
+        val toDate = BudgetCalculator.monthToDateStat(
+            today = LocalDate.parse("2026-10-03"),
+            transactions = transactions,
+            rules = rules
+        )
+
+        assertEquals(3, toDate.days.size)
+        // 3 天 × 30 = 90 元，不是整月的 930 元
+        assertEquals(9000L, toDate.budgetCents)
+        assertEquals(8000L, toDate.spentCents)
+        // 90 - 80 = 10 元
+        assertEquals(1000L, toDate.balanceCents)
+        assertEquals(LocalDate.parse("2026-10-03"), toDate.lastDate)
+
+        // 和整月口径对比：整月会把后面 28 天还没到的钱也加进来，虚高 840 元
+        val wholeMonth = BudgetCalculator.monthStat(YearMonth.of(2026, 10), transactions, rules)
+        assertEquals(85000L, wholeMonth.balanceCents)
+    }
+
+    /** 本月至今不掺上个月的账：10 月的存钱罐不装 9 月剩的钱 */
+    @Test
+    fun `本月至今不串上个月的结余`() {
+        val rules = listOf(defaultRule(30, "2026-09-01"))
+        val transactions = listOf(
+            tx("2026-09-30", 10),
+            tx("2026-10-01", 20),
+            tx("2026-10-02", 10)
+        )
+
+        val stat = BudgetCalculator.monthToDateStat(
+            today = LocalDate.parse("2026-10-02"),
+            transactions = transactions,
+            rules = rules
+        )
+
+        assertEquals(2, stat.days.size)
+        assertEquals(6000L, stat.budgetCents)
+        assertEquals(3000L, stat.spentCents)
+        assertEquals(3000L, stat.balanceCents)
+    }
+
+    /** until 落在别的月份时是安全的：早于本月 → 空；晚于本月 → 整月 */
+    @Test
+    fun `until 跨月的边界`() {
+        val rules = listOf(defaultRule(30, "2026-09-01"))
+
+        val before = BudgetCalculator.monthStat(
+            YearMonth.of(2026, 10), emptyList(), rules,
+            until = LocalDate.parse("2026-09-30")
+        )
+        assertEquals(0, before.days.size)
+        assertEquals(0L, before.budgetCents)
+        assertEquals(null, before.lastDate)
+
+        val after = BudgetCalculator.monthStat(
+            YearMonth.of(2026, 10), emptyList(), rules,
+            until = LocalDate.parse("2026-11-05")
+        )
+        assertEquals(31, after.days.size)
+        assertEquals(31 * 3000L, after.budgetCents)
+    }
+
     /** 日历格子里的金额要短到塞得进 40dp */
     @Test
     fun `日历格子金额写法`() {

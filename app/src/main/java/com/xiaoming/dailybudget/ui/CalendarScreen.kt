@@ -21,7 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
+import com.xiaoming.dailybudget.ui.theme.AppMono
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -291,15 +291,6 @@ fun CalendarScreen(
                     }
                     Spacer(Modifier.height(12.dp))
                     CategoryRanking(categories = categories, totalCents = monthStat.spentCents)
-                    Spacer(Modifier.height(6.dp))
-                    DashedDivider()
-                    Spacer(Modifier.height(10.dp))
-                    Text(
-                        text = "本月结余只算本月的预算与支出，不含上月结转；" +
-                            "跨月的滚存请看首页「存钱罐」。",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
             }
         }
@@ -470,7 +461,7 @@ private fun DayCell(
         Text(
             text = stat.date.dayOfMonth.toString(),
             fontSize = 13.sp,
-            fontFamily = FontFamily.Monospace,
+            fontFamily = AppMono,
             fontWeight = if (isToday || selected) FontWeight.Bold else FontWeight.Normal,
             color = dayColor,
             maxLines = 1
@@ -487,7 +478,7 @@ private fun DayCell(
                 Text(
                     text = centsToCompactYuan(stat.spentCents),
                     fontSize = 9.sp,
-                    fontFamily = FontFamily.Monospace,
+                    fontFamily = AppMono,
                     fontWeight = FontWeight.Medium,
                     color = amountColor,
                     maxLines = 1,
@@ -606,7 +597,7 @@ private fun CategoryRanking(categories: List<Pair<String, Long>>, totalCents: Lo
             Text(
                 text = "$percent%",
                 fontSize = 10.sp,
-                fontFamily = FontFamily.Monospace,
+                fontFamily = AppMono,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(Modifier.width(8.dp))

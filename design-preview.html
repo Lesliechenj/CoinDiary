@@ -212,9 +212,9 @@
 <body>
 
 <div class="page-head">
-  <div class="eyebrow">碎银集 CoinDiary · 设计预览 V1.4</div>
+  <div class="eyebrow">碎银集 CoinDiary · 设计预览 V1.5</div>
   <div style="display:flex;align-items:center;gap:18px;margin-bottom:14px">
-    <img src="docs/icon.svg" width="76" height="76" alt="碎银集图标" style="border-radius:17px">
+    <img src="docs/icon.png" width="76" height="76" alt="碎银集图标" style="border-radius:17px">
     <h1 style="margin:0">碎银集</h1>
   </div>
   <p class="lede">
@@ -223,10 +223,15 @@
     所有注意力都落在那个数字上：<b>今天这一天结余多少</b>。
   </p>
   <p class="lede" style="margin-top:10px">
+    V1.5 三处改动：<b>图标</b>换成一只按计算器的小恐龙（手绘金币、账单、小猪存钱罐环绕）；
+    <b>字体</b>全部打进安装包（思源黑体 + JetBrains Mono），不再跟随手机系统字，
+    每台手机看到的样子都一样；<b>存钱罐改成只装本月截至今天的钱</b>，
+    并新增<b>心愿单</b> —— 把想买的东西写下来，存钱罐够不够一眼看到。
+  </p>
+  <p class="lede" style="margin-top:10px">
     V1.4 把首页两个数字的分工改清楚了：大字<b>「今日结余」只看当天</b>（今日预算 − 今日已花），
-    下面<b>「存钱罐」看截至今日的累计</b>（之前结余 + 今日结余）。
-    以前两处都显示累计值，看起来是两个一样的数；现在一个回答「今天怎么样」，
-    一个回答「一共攒了多少」。
+    存钱罐则回答另一件事 —— <b>这个月到现在攒下多少</b>（本月 1 号到今天的预算 − 这段时间的花费）。
+    以前两处都显示同一个累计值，看起来像两个一样的数，现在各答各的问题。
   </p>
   <p class="lede" style="margin-top:10px">
     V1.2 新增<b>月视图</b>：整月摊成一张日历，每天的花费直接写在格子里，
@@ -234,8 +239,8 @@
     下面就展开那天的完整明细 —— <b>哪天花超了、哪天空着，扫一眼就知道</b>。
   </p>
   <p class="lede" style="margin-top:10px">
-    V1.3 改名<b>碎银集</b>并重做图标：一枚硬币（深墨底 + 纸白圆环 + ¥）。
-    每天省下的一点钱像碎银子一样攒起来，攒着攒着就是一整笔。
+    V1.3 从「每日预算记账」改名<b>碎银集</b>（英文 CoinDiary）——
+    每天省下的一点钱像碎银子，一枚一枚攒起来，攒着攒着就是一整笔。
   </p>
 </div>
 
@@ -262,7 +267,7 @@
             <span class="cny">¥</span>
             <span class="num mono">10.00</span>
           </div>
-          <div class="sub">按默认日预算算</div>
+          <div class="sub">按默认日预算</div>
           <div class="dash" style="margin-top:12px"></div>
           <div class="stats">
             <div><div class="label">今日预算</div><div class="v mono">30.00</div></div>
@@ -281,13 +286,13 @@
 
         <div class="ticket">
           <div class="row">
-            <span class="label">存钱罐 · 截至今日</span>
-            <span class="sub" style="margin:0">自 10月24日 起</span>
+            <span class="label">存钱罐 · 本月至今</span>
+            <span class="sub" style="margin:0">10 月 1–27 日</span>
           </div>
           <div class="amount">
             <span class="num mono pos" style="font-size:26px">25.00</span>
           </div>
-          <div class="sub">存钱罐 = 之前结余 + 今日结余</div>
+          <div class="sub">1–27 日预算 810.00 − 已花 785.00</div>
           <div class="dash" style="margin-top:11px"></div>
           <div class="bars">
             <div><div class="bar" style="height:14px"></div><div class="d">三</div></div>
@@ -299,7 +304,7 @@
             <div><div class="bar" style="height:18px"></div><div class="d">二</div></div>
           </div>
           <div class="row" style="margin-top:8px">
-            <span class="label">近 7 天每天的结余</span>
+            <span class="label">近 7 天结余</span>
             <span class="label pos">有结余</span>
           </div>
         </div>
@@ -326,6 +331,7 @@
       <div class="navbar">
         <div class="on">今天<i></i></div>
         <div>日历<i></i></div>
+        <div>心愿<i></i></div>
         <div>明细<i></i></div>
         <div>预算<i></i></div>
       </div>
@@ -353,9 +359,9 @@
           </div>
           <div class="dash" style="margin-top:9px"></div>
           <div class="stats" style="margin-top:9px">
-            <div><div class="label">本月预算</div><div class="v mono">1080.00</div></div>
+            <div><div class="label">本月预算</div><div class="v mono">900.00</div></div>
             <div><div class="label">本月已花</div><div class="v mono">585.00</div></div>
-            <div><div class="label">本月结余</div><div class="v mono pos">+495.00</div></div>
+            <div><div class="label">本月结余</div><div class="v mono pos">+315.00</div></div>
           </div>
           <div class="dash" style="margin-top:9px"></div>
 
@@ -462,6 +468,7 @@
       <div class="navbar">
         <div>今天<i></i></div>
         <div class="on">日历<i></i></div>
+        <div>心愿<i></i></div>
         <div>明细<i></i></div>
         <div>预算<i></i></div>
       </div>
@@ -532,6 +539,7 @@
       <div class="navbar">
         <div>今天<i></i></div>
         <div>日历<i></i></div>
+        <div>心愿<i></i></div>
         <div class="on">明细<i></i></div>
         <div>预算<i></i></div>
       </div>
@@ -561,7 +569,7 @@
             <span class="num mono" style="font-size:27px">30.00</span>
             <span class="sub" style="padding-bottom:6px">/ 天</span>
           </div>
-          <div class="sub">改完从今天起生效，之前的日子仍按当时的金额算</div>
+          <div class="sub">改完从今天起生效，之前的日子不受影响</div>
         </div>
 
         <div class="ticket">
@@ -579,7 +587,7 @@
 
         <div class="ticket">
           <div class="label">单独设置某一天</div>
-          <div class="sub" style="margin-top:4px">只影响那一天，优先级最高。比如朋友生日要聚餐</div>
+          <div class="sub" style="margin-top:4px">只影响那一天，比如朋友生日聚餐</div>
           <button class="btn-outline">选一天设置预算</button>
           <div class="row" style="margin-top:9px">
             <span style="font-size:13px">10月31日 周六</span>
@@ -588,8 +596,8 @@
         </div>
 
         <div class="ticket">
-          <div class="label">预算怎么取值</div>
-          <div style="font-size:13.5px;margin-top:7px">单独某天　＞　周几　＞　默认日预算</div>
+          <div class="label">预算怎么算</div>
+          <div style="font-size:12px;margin-top:7px">单独某天　＞　按星期几　＞　默认日预算</div>
           <div class="sub" style="margin-top:7px">当天没花完的钱自动进存钱罐；超支的话从存钱罐里扣。</div>
         </div>
       </div>
@@ -597,8 +605,97 @@
       <div class="navbar">
         <div>今天<i></i></div>
         <div>日历<i></i></div>
+        <div>心愿<i></i></div>
         <div>明细<i></i></div>
         <div class="on">预算<i></i></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 屏 5：心愿单 ============ -->
+  <div>
+    <div class="caption">心愿单</div>
+    <div class="phone">
+      <div class="appbar">
+        <div class="appbar-row">
+          <div class="appbar-title">心愿单</div>
+          <div class="appbar-date">10月27日 周二</div>
+        </div>
+        <div class="dash"></div>
+      </div>
+
+      <div class="content">
+        <div class="ticket">
+          <div class="row">
+            <span class="label">拿哪笔钱去比</span>
+            <span class="sub" style="margin:0">够就买得起</span>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <div style="flex:1;background:var(--ink);border-radius:4px;padding:9px 10px">
+              <div style="font-size:10.5px;letter-spacing:.07em;color:rgba(251,250,246,.72)">本月至今</div>
+              <div class="mono" style="font-size:16px;font-weight:600;color:var(--receipt);margin-top:4px">25.00</div>
+            </div>
+            <div style="flex:1;border:1px solid var(--hair);border-radius:4px;padding:9px 10px">
+              <div style="font-size:10.5px;letter-spacing:.07em;color:var(--ink-soft)">总存钱罐</div>
+              <div class="mono" style="font-size:16px;font-weight:600;margin-top:4px">1890.00</div>
+            </div>
+          </div>
+          <div class="dash" style="margin-top:10px"></div>
+          <div class="sub" style="margin-top:10px">本月 1–27 日：预算 810.00 − 已花 785.00</div>
+        </div>
+
+        <div class="row" style="padding-top:2px;align-items:flex-start">
+          <div>
+            <div style="font-size:14px;font-weight:650">心愿清单</div>
+            <div class="label" style="margin-top:3px">还没实现 2 件 · 已实现 1 件</div>
+          </div>
+          <span class="label" style="color:var(--ink);font-weight:600">＋ 添加心愿</span>
+        </div>
+
+        <div class="ticket">
+          <div class="row" style="align-items:flex-start">
+            <span style="font-size:15px;font-weight:500">咖啡豆</span>
+            <span class="mono" style="font-size:17px;font-weight:600">19.00</span>
+          </div>
+          <div class="dash" style="margin-top:11px"></div>
+          <div class="row" style="margin-top:9px">
+            <span class="label pos" style="font-weight:600">买得起 · 买完还剩 6.00</span>
+            <span style="background:var(--ink);color:var(--receipt);font-size:12px;border-radius:4px;padding:6px 12px;font-weight:500">已实现心愿</span>
+          </div>
+        </div>
+
+        <div class="ticket">
+          <div class="row" style="align-items:flex-start">
+            <span style="font-size:15px;font-weight:500">降噪耳机</span>
+            <span class="mono" style="font-size:17px;font-weight:600">899.00</span>
+          </div>
+          <div class="dash" style="margin-top:11px"></div>
+          <div class="row" style="margin-top:9px">
+            <span class="label neg" style="font-weight:600">预算不足 · 还差 874.00</span>
+            <span style="border:1px solid var(--hair);color:var(--ink-soft);font-size:12px;border-radius:4px;padding:6px 12px">仍要实现</span>
+          </div>
+        </div>
+
+        <div class="ticket">
+          <div class="row" style="align-items:flex-start">
+            <span style="font-size:15px;font-weight:500;color:var(--ink-soft);text-decoration:line-through">人体工学椅</span>
+            <span class="mono" style="font-size:17px;font-weight:600;color:var(--ink-soft)">1299.00</span>
+          </div>
+          <div class="dash" style="margin-top:11px"></div>
+          <div class="row" style="margin-top:9px">
+            <span class="label pos" style="font-weight:600">已实现 · 已计入支出</span>
+            <span class="label" style="color:var(--ink);font-weight:600">撤销</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="fab">＋ 记一笔</div>
+      <div class="navbar">
+        <div>今天<i></i></div>
+        <div>日历<i></i></div>
+        <div class="on">心愿<i></i></div>
+        <div>明细<i></i></div>
+        <div>预算<i></i></div>
       </div>
     </div>
   </div>
@@ -618,9 +715,13 @@
   </div>
 
   <div class="type-scale">
-    <p><span class="spec mono" style="font-size:30px;font-weight:700">¥25.00</span>　金额：等宽字体 + 粗字重，竖排自动对齐</p>
-    <p><span class="spec" style="font-size:19px;font-weight:650">碎银集</span>　标题：无衬线 20sp，字距收紧 −0.2</p>
+    <p><span class="spec mono" style="font-size:30px;font-weight:700">¥25.00</span>　金额：JetBrains Mono 等宽 + 粗字重，竖排自动对齐</p>
+    <p><span class="spec" style="font-size:19px;font-weight:650">碎银集</span>　标题：思源黑体 20sp，字距收紧 −0.2</p>
     <p><span class="spec" style="font-size:10.5px;letter-spacing:.07em;color:#6B6F73;font-weight:600">今日结余</span>　标签：11sp，字距 +0.7，全部小写视觉重量</p>
+    <p style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--hair)">
+      两套字体都已打进安装包（V1.5）：思源黑体裁到 GB2312 全部汉字（8MB → 1.9MB），
+      JetBrains Mono 只 264KB。所以换任何手机，字都是这个样子，不会被厂商字体替换掉。
+    </p>
   </div>
 </div>
 
