@@ -223,6 +223,12 @@
     所有注意力都落在那个数字上：<b>今天这一天结余多少</b>。
   </p>
   <p class="lede" style="margin-top:10px">
+    V1.6 新增<b>攒钱</b>：除了「今天少花一点」自然留下的钱，还可以主动记一笔
+    —— 少喝奶茶、卖掉闲置、这个月没打车。<b>攒的钱不进账本，只往存钱罐里加</b>，
+    所以任何一天的结余都不会因此变好看，账本和存钱罐永远不会打架。
+    首页存钱罐上直接有「攒一笔」的入口，明细页也多了一本「攒钱」账。
+  </p>
+  <p class="lede" style="margin-top:10px">
     V1.5 三处改动：<b>图标</b>换成一只按计算器的小恐龙（手绘金币、账单、小猪存钱罐环绕）；
     <b>字体</b>全部打进安装包（思源黑体 + JetBrains Mono），不再跟随手机系统字，
     每台手机看到的样子都一样；<b>存钱罐改成只装本月截至今天的钱</b>，
@@ -290,9 +296,15 @@
             <span class="sub" style="margin:0">10 月 1–27 日</span>
           </div>
           <div class="amount">
-            <span class="num mono pos" style="font-size:26px">25.00</span>
+            <span class="num mono pos" style="font-size:26px">85.00</span>
           </div>
-          <div class="sub">1–27 日预算 810.00 − 已花 785.00</div>
+          <div class="row" style="margin-top:3px;align-items:flex-start">
+            <div style="flex:1">
+              <div class="sub">本月预算 810.00 − 已花 785.00</div>
+              <div class="sub pos" style="margin-top:3px">其中自己攒了 60.00</div>
+            </div>
+            <div style="border:1px solid var(--hair);border-radius:4px;padding:6px 10px;font-size:12px;white-space:nowrap">＋ 攒一笔</div>
+          </div>
           <div class="dash" style="margin-top:11px"></div>
           <div class="bars">
             <div><div class="bar" style="height:14px"></div><div class="d">三</div></div>
@@ -488,6 +500,13 @@
       </div>
 
       <div class="content" style="gap:0;padding-top:4px">
+        <div class="row" style="margin-bottom:10px">
+          <div style="display:flex;gap:18px;align-items:baseline">
+            <span style="font-size:14px;font-weight:650;border-bottom:2px solid var(--ink);padding-bottom:3px">支出</span>
+            <span style="font-size:14px;color:var(--ink-soft);padding-bottom:3px">攒钱</span>
+          </div>
+          <span class="label">共 6 笔</span>
+        </div>
         <div class="group-head">
           <div class="group-line"><span class="group-title">10月27日 周二</span><span class="label">预算 30.00</span></div>
           <div class="group-line">
@@ -633,7 +652,7 @@
           <div style="display:flex;gap:8px;margin-top:10px">
             <div style="flex:1;background:var(--ink);border-radius:4px;padding:9px 10px">
               <div style="font-size:10.5px;letter-spacing:.07em;color:rgba(251,250,246,.72)">本月至今</div>
-              <div class="mono" style="font-size:16px;font-weight:600;color:var(--receipt);margin-top:4px">25.00</div>
+              <div class="mono" style="font-size:16px;font-weight:600;color:var(--receipt);margin-top:4px">85.00</div>
             </div>
             <div style="flex:1;border:1px solid var(--hair);border-radius:4px;padding:9px 10px">
               <div style="font-size:10.5px;letter-spacing:.07em;color:var(--ink-soft)">总存钱罐</div>
@@ -641,7 +660,7 @@
             </div>
           </div>
           <div class="dash" style="margin-top:10px"></div>
-          <div class="sub" style="margin-top:10px">本月 1–27 日：预算 810.00 − 已花 785.00</div>
+          <div class="sub" style="margin-top:10px">本月 1–27 日：预算 810.00 − 已花 785.00<br>其中自己攒了 60.00</div>
         </div>
 
         <div class="row" style="padding-top:2px;align-items:flex-start">
@@ -659,7 +678,7 @@
           </div>
           <div class="dash" style="margin-top:11px"></div>
           <div class="row" style="margin-top:9px">
-            <span class="label pos" style="font-weight:600">买得起 · 买完还剩 6.00</span>
+            <span class="label pos" style="font-weight:600">买得起 · 买完还剩 66.00</span>
             <span style="background:var(--ink);color:var(--receipt);font-size:12px;border-radius:4px;padding:6px 12px;font-weight:500">已实现心愿</span>
           </div>
         </div>
@@ -700,6 +719,55 @@
     </div>
   </div>
 
+  <!-- ============ 屏 6：明细 · 攒钱 ============ -->
+  <div>
+    <div class="caption">明细 · 攒钱</div>
+    <div class="phone">
+      <div class="appbar">
+        <div class="appbar-row">
+          <div class="appbar-title">明细</div>
+          <div class="appbar-date">10月27日 周二</div>
+        </div>
+        <div class="dash"></div>
+      </div>
+
+      <div class="content" style="gap:0;padding-top:4px">
+        <div class="row" style="margin-bottom:10px">
+          <div style="display:flex;gap:18px;align-items:baseline">
+            <span style="font-size:14px;color:var(--ink-soft);padding-bottom:3px">支出</span>
+            <span style="font-size:14px;font-weight:650;border-bottom:2px solid var(--ink);padding-bottom:3px">攒钱</span>
+          </div>
+          <span class="label">共 2 笔</span>
+        </div>
+
+        <div class="row" style="margin-top:4px">
+          <span class="label">累计攒了</span>
+          <span class="mono pos" style="font-size:15px;font-weight:600">60.00</span>
+        </div>
+        <div class="dash" style="margin-top:10px"></div>
+
+        <div class="item">
+          <span class="dot" style="background:#2F6B4F"></span>
+          <div class="item-main"><div class="item-cat">卖掉闲置</div><div class="item-note">10月25日 周日</div></div>
+          <span class="item-amt mono pos">+45.00</span><span class="x">×</span>
+        </div>
+        <div class="item">
+          <span class="dot" style="background:#2F6B4F"></span>
+          <div class="item-main"><div class="item-cat">少喝奶茶</div><div class="item-note">10月23日 周五</div></div>
+          <span class="item-amt mono pos">+15.00</span><span class="x">×</span>
+        </div>
+      </div>
+
+      <div class="navbar">
+        <div>今天<i></i></div>
+        <div>日历<i></i></div>
+        <div>心愿<i></i></div>
+        <div class="on">明细<i></i></div>
+        <div>预算<i></i></div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ============ 设计 token ============ -->
@@ -715,7 +783,7 @@
   </div>
 
   <div class="type-scale">
-    <p><span class="spec mono" style="font-size:30px;font-weight:700">¥25.00</span>　金额：JetBrains Mono 等宽 + 粗字重，竖排自动对齐</p>
+    <p><span class="spec mono" style="font-size:30px;font-weight:700">¥85.00</span>　金额：JetBrains Mono 等宽 + 粗字重，竖排自动对齐</p>
     <p><span class="spec" style="font-size:19px;font-weight:650">碎银集</span>　标题：思源黑体 20sp，字距收紧 −0.2</p>
     <p><span class="spec" style="font-size:10.5px;letter-spacing:.07em;color:#6B6F73;font-weight:600">今日结余</span>　标签：11sp，字距 +0.7，全部小写视觉重量</p>
     <p style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--hair)">

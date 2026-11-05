@@ -12,22 +12,22 @@
 
 ---
 
-## 当前状态：V1.5 已编译通过，可直接安装
+## 当前状态：V1.6 已编译通过，可直接安装
 
 | 项目 | 结果 |
 |---|---|
-| 版本 | 1.5（新图标 + 内置字体 + 存钱罐改「本月至今」+ 心愿单） |
+| 版本 | 1.6（新增攒钱：手动记一笔攒下的钱，直接进存钱罐） |
 | 应用名 | 碎银集（桌面显示）· CoinDiary（英文名 / 仓库名） |
 | 编译 | 通过（JDK 17 + Android SDK 34 + Gradle 8.9） |
-| 单元测试 | 17 个用例全部通过（滚存、月视图、本月至今口径、心愿判断） |
-| 产物 | `apk/CoinDiary-v1.5-debug.apk`（已签名） |
+| 单元测试 | 25 个用例全部通过（滚存、月视图、本月至今口径、心愿判断、攒钱） |
+| 产物 | `apk/CoinDiary-v1.6-debug.apk`（已签名） |
 | 设计预览 | 用浏览器打开 `design-preview.html`，不装 App 也能先看界面 |
 | 包名 | `com.xiaoming.dailybudget`（保持不变，避免旧数据丢失） |
 | 支持版本 | Android 8.0（API 26）及以上 |
 
-**装到手机**：把 `apk/CoinDiary-v1.5-debug.apk` 传到手机（微信文件传输 / 数据线都行），
+**装到手机**：把 `apk/CoinDiary-v1.6-debug.apk` 传到手机（微信文件传输 / 数据线都行），
 点击安装，首次会提示「未知来源」，允许即可。
-（装过旧版的话直接覆盖安装，数据不会丢。）
+（装过旧版的话直接覆盖安装，数据不会丢；数据库会从 v2 自动升到 v3，只多一张攒钱表。）
 
 > 这是 debug 版：能正常日常使用，只是包体略大、不带正式发布签名。
 > 以后想上应用商店再打 release 包。
@@ -62,6 +62,15 @@
 这个逻辑写在 `app/src/main/java/com/xiaoming/dailybudget/logic/BudgetCalculator.kt`，
 并且有单元测试把上面这个例子固化了（`BudgetCalculatorTest.kt`），改代码时能自动发现算错。
 
+存钱罐在这个基础上多一项（V1.6）：
+
+```
+存钱罐 = 预算结余（上面那个公式） + 手动攒进去的钱
+```
+
+两者分开算再相加，所以「这钱哪来的」永远答得上来：是每天省下来的，还是主动攒的。
+这段逻辑在 `logic/PiggyBank.kt`，测试在 `PiggyBankTest.kt`。
+
 ---
 
 ## 三、预算的三种设置方式（优先级从高到低）
@@ -77,7 +86,7 @@
 
 ---
 
-## 四、界面设计（V1.5）
+## 四、界面设计（V1.6）
 
 视觉主张是「**收银小票 / 存根**」—— 记账的本质就是一张张小票，所以界面不装可爱，
 也不套常见的绿色 Material 卡片，而是用票据的语言：
@@ -129,7 +138,8 @@
      （超支时变红，并在右上角盖一枚倾斜的「超支」印章）
    - 刻度尺显示今天花了预算的多少
    - 今日预算 / 今日已花 / 之前结余 三栏
-   - 存钱罐卡：**本月至今**（本月 1 号到今天的预算 − 这段时间的花费）+ 近 7 天柱状图
+   - 存钱罐卡：**本月至今**（本月预算结余 ＋ 本月攒的钱）+ 近 7 天柱状图
+   - 卡里直接有「＋ 攒一笔」入口，攒过钱时会多一行「其中自己攒了 xx」
    - 今日账单列表（小票条目式，右侧细小 × 删除）
    - 右下角「记一笔」
 
@@ -158,8 +168,9 @@
    - 钱不够也允许实现，但会先弹一次确认（提醒会透支）
 
 4. **明细**
-   - 一本流水账：每天一条抬头（日期 / 预算 / 结余），下面是当天的条目
-   - 结余正数苔绿、负数印章红
+   - 两本账，顶部切换：**支出** / **攒钱**
+   - 支出：每天一条抬头（日期 / 预算 / 结余），下面是当天的条目，结余正数苔绿、负数印章红
+   - 攒钱：一笔一行（方式 + 日期 + 绿色 +金额），顶部显示「累计攒了」
 
 5. **预算**
    - 默认日预算（大字显示，右侧「修改」）
@@ -169,8 +180,17 @@
 
 「记一笔」支持：金额、日期（可补记往日）、分类（餐饮/交通/购物/娱乐/居家/医疗/其他）、备注。
 
+「攒一笔」（V1.6）只问两件事：怎么攒的、攒了多少。
+输入框下面有四个常用方式（少喝奶茶 / 自己做饭 / 今天没打车 / 卖掉闲置），点一下直接填。
+
+> **攒钱和记账是两件事，别混**：
+> 记账记的是「花出去的」，攒钱记的是「特意留下来的」。
+> 所以攒钱**不进支出表**，不占任何一天的预算，也不会让当天结余变好看；
+> 它只做一件事 —— 往存钱罐里加钱。这样账本永远是账本，存钱罐永远是存钱罐，
+> 不会出现「首页说攒了 100，明细里却找不到这 100 花在哪」的对不上账。
+
 > 想看设计长什么样又不想装 App：用浏览器打开 `design-preview.html`，
-> 里面是五屏的完整视觉稿 + 设计 token 说明。
+> 里面是六屏的完整视觉稿 + 设计 token 说明。
 
 ---
 
@@ -178,7 +198,7 @@
 
 ### 方案 A：直接用已编译好的 APK（最快）
 
-`apk/CoinDiary-v1.5-debug.apk` 传到手机安装即可，不用装任何软件。
+`apk/CoinDiary-v1.6-debug.apk` 传到手机安装即可，不用装任何软件。
 
 ### 方案 B：GitHub 云端自动打包
 
@@ -225,32 +245,39 @@ GitHub Actions 用的是 Linux，完全没有这个问题。
 ```
 CoinDiary/
 ├── app/src/main/java/com/xiaoming/dailybudget/
-│   ├── logic/BudgetCalculator.kt      ★ 核心算法，先看这个
+│   ├── logic/
+│   │   ├── BudgetCalculator.kt        ★ 核心算法，先看这个
+│   │   └── PiggyBank.kt                存钱罐 = 预算结余 + 攒的钱（V1.6 新增）
 │   ├── data/
 │   │   ├── TransactionEntity.kt        支出记录表
 │   │   ├── BudgetRuleEntity.kt         预算规则表（三种类型）
+│   │   ├── WishEntity.kt               心愿表（V1.5 新增）
+│   │   ├── SavingEntity.kt             攒钱记录表（V1.6 新增）
 │   │   ├── Daos.kt                     数据库读写
-│   │   └── AppDatabase.kt              数据库初始化
+│   │   └── AppDatabase.kt              数据库初始化 + 版本迁移
 │   ├── AppViewModel.kt                 把数据库和界面连起来
-│   ├── MainActivity.kt                 底部四个页签的框架
+│   ├── MainActivity.kt                 底部五个页签的框架
 │   └── ui/
 │       ├── HomeScreen.kt               首页
 │       ├── CalendarScreen.kt           月视图日历（V1.2 新增）
 │       ├── WishScreen.kt               心愿单（V1.5 新增）
-│       ├── DetailScreen.kt             明细页
+│       ├── DetailScreen.kt             明细页（支出 / 攒钱两本账）
 │       ├── BudgetScreen.kt             预算设置页
 │       ├── AddTransactionDialog.kt     记一笔弹窗
+│       ├── AddSavingDialog.kt          攒一笔弹窗（V1.6 新增）
 │       ├── Components.kt               公共小组件
 │       └── theme/
 │           ├── Theme.kt                配色与字阶
 │           └── Fonts.kt                内置字体（V1.5 新增）
+├── app/schemas/                        Room 导出的建表结构（升级时要逐字核对）
 ├── app/src/main/res/
 │   ├── font/                           思源黑体 + JetBrains Mono（V1.5 新增）
 │   ├── mipmap-*/ic_launcher*.png       各尺寸图标（V1.5 换成插画）
 │   └── mipmap-anydpi-v26/ic_launcher.xml     自适应图标入口
 ├── app/src/test/java/.../BudgetCalculatorTest.kt   ★ 算法测试
 ├── app/src/test/java/.../WishLogicTest.kt          心愿够不够的测试
-├── apk/CoinDiary-v1.5-debug.apk        已编译好的安装包
+├── app/src/test/java/.../PiggyBankTest.kt          攒钱怎么进存钱罐的测试
+├── apk/CoinDiary-v1.6-debug.apk        已编译好的安装包
 ├── docs/icon.png                       512px 图标（可做仓库头像）
 ├── design-preview.html                 界面视觉稿（浏览器直接打开）
 └── .github/workflows/build-apk.yml     云端打包流水线

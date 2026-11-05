@@ -43,6 +43,20 @@ interface BudgetRuleDao {
 }
 
 @Dao
+interface SavingDao {
+
+    @Insert
+    suspend fun insert(item: SavingEntity)
+
+    @Delete
+    suspend fun delete(item: SavingEntity)
+
+    /** 按日期倒序返回全部攒钱记录 */
+    @Query("SELECT * FROM saving ORDER BY date DESC, createdAt DESC")
+    fun observeAll(): Flow<List<SavingEntity>>
+}
+
+@Dao
 interface WishDao {
 
     @Insert

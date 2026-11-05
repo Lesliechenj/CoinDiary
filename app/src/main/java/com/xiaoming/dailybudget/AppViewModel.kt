@@ -8,9 +8,11 @@ import com.xiaoming.dailybudget.data.BudgetRuleEntity
 import com.xiaoming.dailybudget.data.BudgetRuleEntity.Companion.TYPE_DATE
 import com.xiaoming.dailybudget.data.BudgetRuleEntity.Companion.TYPE_DEFAULT
 import com.xiaoming.dailybudget.data.BudgetRuleEntity.Companion.TYPE_WEEKDAY
+import com.xiaoming.dailybudget.data.SavingEntity
 import com.xiaoming.dailybudget.data.TransactionEntity
 import com.xiaoming.dailybudget.data.WishEntity
 import com.xiaoming.dailybudget.logic.BudgetCalculator
+import com.xiaoming.dailybudget.logic.PiggyBank
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -29,6 +31,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val transactionDao = db.transactionDao()
     private val budgetRuleDao = db.budgetRuleDao()
     private val wishDao = db.wishDao()
+    private val savingDao = db.savingDao()
 
     /** 全部支出记录（数据库一变，这个流就自动推新值） */
     val transactions: StateFlow<List<TransactionEntity>> = transactionDao.observeAll()
@@ -40,6 +43,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     /** 全部心愿（未实现在前） */
     val wishes: StateFlow<List<WishEntity>> = wishDao.observeAll()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /** 全部攒钱记录（新的在前） */
+    val savings: StateFlow<List<SavingEntity>> = savingDao.observeAll()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     /** 汇总结果：今日预算、今日已花、结转、总剩余 */
@@ -81,6 +88,51 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             SharingStarted.WhileSubscribed(5_000),
             BudgetCalculator.monthToDateStat(LocalDate.now(), emptyList(), emptyList())
         )
+
+    /**
+     * 本月 1 号到今天的存钱罐 —— 首页那张卡显示它，心愿单的「本月至今」也用它。
+     * 公式：本月预算结余 + 本月攒的钱。
+     */
+    val piggyMonth: StateFlow<PiggyBank.Stat> =
+        combine(transactions, rules, savings) { txs, rs, sv ->
+            PiggyBank.monthToDate(LocalDate.now(), txs, rs, sv)
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            PiggyBank.monthToDate(LocalDate.now(), emptyList(), emptyList(), emptyList())
+        )
+
+    /**
+     * 从记账第一天到今天的存钱罐 —— 心愿单的「总存钱罐」用它。
+     */
+    val piggyTotal: StateFlow<PiggyBank.Stat> =
+        combine(transactions, rules, savings) { txs, rs, sv ->
+            PiggyBank.total(LocalDate.now(), txs, rs, sv)
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            PiggyBank.total(LocalDate.now(), emptyList(), emptyList(), emptyList())
+        )
+
+    /** 记一笔攒钱：方式 + 金额，默认记在今天 */
+    fun addSaving(source: String, amountCents: Long, date: LocalDate = LocalDate.now()) {
+        val trimmed = source.trim()
+        if (trimmed.isEmpty() || amountCents <= 0L) return
+        viewModelScope.launch {
+            savingDao.insert(
+                SavingEntity(
+                    source = trimmed,
+                    amountCents = amountCents,
+                    date = date.toString(),
+                    createdAt = System.currentTimeMillis()
+                )
+            )
+        }
+    }
+
+    fun deleteSaving(item: SavingEntity) {
+        viewModelScope.launch { savingDao.delete(item) }
+    }
 
     /** 记一笔支出 */
     fun addExpense(date: LocalDate, amountCents: Long, category: String, note: String) {

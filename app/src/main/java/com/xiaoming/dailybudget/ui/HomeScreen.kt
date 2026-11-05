@@ -2,6 +2,7 @@ package com.xiaoming.dailybudget.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -21,6 +23,7 @@ import com.xiaoming.dailybudget.data.BudgetRuleEntity.Companion.TYPE_DATE
 import com.xiaoming.dailybudget.data.BudgetRuleEntity.Companion.TYPE_WEEKDAY
 import com.xiaoming.dailybudget.data.TransactionEntity
 import com.xiaoming.dailybudget.logic.BudgetCalculator
+import com.xiaoming.dailybudget.logic.PiggyBank
 import com.xiaoming.dailybudget.util.centsToPlainYuan
 import com.xiaoming.dailybudget.util.toChineseDate
 import com.xiaoming.dailybudget.util.weekdayText
@@ -31,16 +34,18 @@ import kotlin.math.abs
  * 首页。整个页面只回答一个问题：今天还能花多少。
  * 所以最大的字只留给那个数字，其余信息按票据分栏排在下面。
  *
- * @param monthToDate 本月 1 号到今天的统计，存钱罐用它。
- *                    注意不是整月 —— 钱按天到账，未来的日子还没到，不该提前算进存钱罐。
+ * @param piggyMonth 本月 1 号到今天的存钱罐（预算结余 + 攒的钱）。
+ *                   注意不是整月 —— 钱按天到账，未来的日子还没到，不该提前算进来。
+ * @param onAddSaving 点「攒一笔」时通知外面打开弹窗
  */
 @Composable
 fun HomeScreen(
     summary: BudgetCalculator.Summary,
-    monthToDate: BudgetCalculator.MonthStat,
+    piggyMonth: PiggyBank.Stat,
     rules: List<BudgetRuleEntity>,
     todayTransactions: List<TransactionEntity>,
     onDelete: (TransactionEntity) -> Unit,
+    onAddSaving: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val today = LocalDate.now()
@@ -140,35 +145,48 @@ fun HomeScreen(
             }
         }
 
-        // ---------- 存钱罐（本月至今） ----------
+        // ---------- 存钱罐（本月至今 + 攒的钱） ----------
         item {
             TicketCard {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     SectionLabel("存钱罐 · 本月至今")
                     Spacer(Modifier.weight(1f))
                     Text(
-                        text = dateRangeText(monthToDate),
+                        text = monthRangeText(today),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 Spacer(Modifier.height(8.dp))
                 MoneyText(
-                    text = centsToPlainYuan(monthToDate.balanceCents),
+                    text = centsToPlainYuan(piggyMonth.totalCents),
                     fontSize = 28.sp,
-                    color = if (monthToDate.balanceCents < 0L) {
+                    color = if (piggyMonth.totalCents < 0L) {
                         MaterialTheme.colorScheme.error
                     } else {
                         MaterialTheme.colorScheme.secondary
                     }
                 )
                 Spacer(Modifier.height(6.dp))
-                Text(
-                    text = "本月预算 ${centsToPlainYuan(monthToDate.budgetCents)}" +
-                        " − 已花 ${centsToPlainYuan(monthToDate.spentCents)}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            text = "本月预算 ${centsToPlainYuan(piggyMonth.budgetCents)}" +
+                                " − 已花 ${centsToPlainYuan(piggyMonth.spentCents)}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        if (piggyMonth.hasSaving) {
+                            Spacer(Modifier.height(2.dp))
+                            Text(
+                                text = "其中自己攒了 ${centsToPlainYuan(piggyMonth.savedCents)}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                        }
+                    }
+                    SavingButton(onClick = onAddSaving)
+                }
                 Spacer(Modifier.height(14.dp))
                 DashedDivider()
                 Spacer(Modifier.height(14.dp))
@@ -178,9 +196,9 @@ fun HomeScreen(
                     SectionLabel("近 7 天结余")
                     Spacer(Modifier.weight(1f))
                     Text(
-                        text = if (monthToDate.balanceCents < 0L) "超支" else "有结余",
+                        text = if (piggyMonth.totalCents < 0L) "超支" else "有结余",
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (monthToDate.balanceCents < 0L) {
+                        color = if (piggyMonth.totalCents < 0L) {
                             MaterialTheme.colorScheme.error
                         } else {
                             MaterialTheme.colorScheme.secondary
@@ -229,11 +247,31 @@ fun HomeScreen(
 }
 
 /** 存钱罐右上角的小字：本月 1 号到今天，提醒这个数字的时间范围 */
-private fun dateRangeText(stat: BudgetCalculator.MonthStat): String {
-    val last = stat.lastDate ?: return "${stat.yearMonth.monthValue} 月"
-    val month = last.monthValue
-    // 月初第一天别写成「1–1 日」
-    return if (last.dayOfMonth == 1) "$month 月 1 日" else "$month 月 1–${last.dayOfMonth} 日"
+private fun monthRangeText(today: LocalDate): String =
+    if (today.dayOfMonth == 1) {
+        "${today.monthValue} 月 1 日"
+    } else {
+        "${today.monthValue} 月 1–${today.dayOfMonth} 日"
+    }
+
+/** 存钱罐卡里的小按钮：细描边、无填充，跟票据的分栏线一个语气 */
+@Composable
+private fun SavingButton(onClick: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    Box(
+        modifier = Modifier
+            .padding(start = 8.dp)
+            .clip(RoundedCornerShape(4.dp))
+            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(4.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 6.dp)
+    ) {
+        Text(
+            text = "＋ 攒一笔",
+            fontSize = 12.sp,
+            color = scheme.onSurface
+        )
+    }
 }
 
 /**

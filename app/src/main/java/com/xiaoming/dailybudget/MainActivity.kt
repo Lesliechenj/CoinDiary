@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.xiaoming.dailybudget.ui.AddSavingDialog
 import com.xiaoming.dailybudget.ui.AddTransactionDialog
 import com.xiaoming.dailybudget.ui.BudgetScreen
 import com.xiaoming.dailybudget.ui.CalendarScreen
@@ -57,14 +58,18 @@ private fun AppRoot() {
     val viewModel: AppViewModel = viewModel()
 
     val summary by viewModel.summary.collectAsStateWithLifecycle()
-    // 首页存钱罐和心愿单都看「本月 1 号至今」，不是整月
-    val monthToDate by viewModel.monthToDateStat.collectAsStateWithLifecycle()
+    // 首页存钱罐和心愿单都看「本月 1 号至今」的存钱罐（预算结余 + 攒的钱），不是整月
+    val piggyMonth by viewModel.piggyMonth.collectAsStateWithLifecycle()
+    val piggyTotal by viewModel.piggyTotal.collectAsStateWithLifecycle()
     val transactions by viewModel.transactions.collectAsStateWithLifecycle()
     val rules by viewModel.rules.collectAsStateWithLifecycle()
     val wishes by viewModel.wishes.collectAsStateWithLifecycle()
+    val savings by viewModel.savings.collectAsStateWithLifecycle()
 
     var tab by rememberSaveable { mutableStateOf(0) }
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
+    // 攒钱弹窗单独一个，跟「记一笔」不共用：一个花钱一个存钱，别让人看错
+    var showSavingDialog by rememberSaveable { mutableStateOf(false) }
     // 记一笔时预填的日期（日历页点某天补记），null 表示今天
     var addDateKey by rememberSaveable { mutableStateOf<String?>(null) }
 
@@ -108,10 +113,11 @@ private fun AppRoot() {
             when (tab) {
                 0 -> HomeScreen(
                     summary = summary,
-                    monthToDate = monthToDate,
+                    piggyMonth = piggyMonth,
                     rules = rules,
                     todayTransactions = todayTransactions,
-                    onDelete = viewModel::deleteTransaction
+                    onDelete = viewModel::deleteTransaction,
+                    onAddSaving = { showSavingDialog = true }
                 )
                 1 -> CalendarScreen(
                     transactions = transactions,
@@ -124,11 +130,9 @@ private fun AppRoot() {
                 )
                 2 -> WishScreen(
                     wishes = wishes,
-                    monthBalanceCents = monthToDate.balanceCents,
-                    monthBudgetCents = monthToDate.budgetCents,
-                    monthSpentCents = monthToDate.spentCents,
-                    monthThroughDay = monthToDate.lastDate?.dayOfMonth ?: LocalDate.now().dayOfMonth,
-                    totalRemainingCents = summary.totalRemainingCents,
+                    piggyMonth = piggyMonth,
+                    monthThroughDay = LocalDate.now().dayOfMonth,
+                    piggyTotal = piggyTotal,
                     startDate = summary.startDate,
                     onAdd = viewModel::addWish,
                     onAchieve = viewModel::achieveWish,
@@ -138,7 +142,9 @@ private fun AppRoot() {
                 3 -> DetailScreen(
                     transactions = transactions,
                     rules = rules,
-                    onDelete = viewModel::deleteTransaction
+                    savings = savings,
+                    onDelete = viewModel::deleteTransaction,
+                    onDeleteSaving = viewModel::deleteSaving
                 )
                 else -> BudgetScreen(
                     rules = rules,
@@ -149,6 +155,16 @@ private fun AppRoot() {
                 )
             }
         }
+    }
+
+    if (showSavingDialog) {
+        AddSavingDialog(
+            onDismiss = { showSavingDialog = false },
+            onConfirm = { source, amountCents ->
+                viewModel.addSaving(source, amountCents)
+                showSavingDialog = false
+            }
+        )
     }
 
     if (showAddDialog) {

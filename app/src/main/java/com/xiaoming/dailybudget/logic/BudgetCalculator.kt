@@ -57,8 +57,14 @@ object BudgetCalculator {
          */
         val todayBalanceCents: Long get() = todayBudgetCents - todaySpentCents
 
-        /** 截至今天的累计结余（含之前结转），也就是存钱罐里的钱 */
+        /** 截至今天的累计结余（含之前结转），也就是预算这一侧攒下的钱 */
         val todayRemainingCents: Long get() = carriedInCents + todayBudgetCents - todaySpentCents
+
+        /** 起始日到今天一共分到多少预算（不含攒钱） */
+        val totalBudgetCents: Long get() = days.sumOf { it.budgetCents }
+
+        /** 起始日到今天一共花掉多少（不含攒钱） */
+        val totalSpentCents: Long get() = days.sumOf { it.spentCents }
     }
 
     /**

@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.xiaoming.dailybudget.data.WishEntity
+import com.xiaoming.dailybudget.logic.PiggyBank
 import com.xiaoming.dailybudget.logic.WishLogic
 import com.xiaoming.dailybudget.ui.theme.AppMono
 import com.xiaoming.dailybudget.util.centsToPlainYuan
@@ -37,17 +38,16 @@ import java.time.LocalDate
  * 记账是回头看，心愿单是往前看 ——「照这个攒法，什么时候能买得起」。
  * 它把存钱罐从一个抽象数字，变成一件具体的、正在靠近的东西。
  *
- * @param monthBalanceCents 「本月 1 号至今」攒下的钱，不是整月结余
- * @param monthThroughDay   统计到本月的第几天，用于把口径写清楚
+ * @param piggyMonth     本月 1 号到今天的存钱罐（预算结余 + 攒的钱）
+ * @param monthThroughDay 统计到本月的第几天，用于把口径写清楚
+ * @param piggyTotal     从记账第一天到今天的存钱罐
  */
 @Composable
 fun WishScreen(
     wishes: List<WishEntity>,
-    monthBalanceCents: Long,
-    monthBudgetCents: Long,
-    monthSpentCents: Long,
+    piggyMonth: PiggyBank.Stat,
     monthThroughDay: Int,
-    totalRemainingCents: Long,
+    piggyTotal: PiggyBank.Stat,
     startDate: LocalDate,
     onAdd: (name: String, priceCents: Long) -> Unit,
     onAchieve: (WishEntity, String) -> Unit,
@@ -55,7 +55,7 @@ fun WishScreen(
     onDelete: (WishEntity) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // 比较基准：当月结余 还是 总存钱罐
+    // 比较基准：本月至今 还是 总存钱罐
     var source by rememberSaveable { mutableStateOf(WishEntity.FROM_MONTH) }
     var showAddDialog by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<WishEntity?>(null) }
@@ -63,7 +63,7 @@ fun WishScreen(
     var pendingAchieve by remember { mutableStateOf<WishEntity?>(null) }
 
     val fromMonth = source == WishEntity.FROM_MONTH
-    val availableCents = if (fromMonth) monthBalanceCents else totalRemainingCents
+    val availableCents = if (fromMonth) piggyMonth.totalCents else piggyTotal.totalCents
 
     val pending = wishes.count { !it.achieved }
     val achieved = wishes.count { it.achieved }
@@ -89,14 +89,14 @@ fun WishScreen(
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     SourceTab(
                         label = "本月至今",
-                        amountCents = monthBalanceCents,
+                        amountCents = piggyMonth.totalCents,
                         selected = fromMonth,
                         modifier = Modifier.weight(1f),
                         onClick = { source = WishEntity.FROM_MONTH }
                     )
                     SourceTab(
                         label = "总存钱罐",
-                        amountCents = totalRemainingCents,
+                        amountCents = piggyTotal.totalCents,
                         selected = !fromMonth,
                         modifier = Modifier.weight(1f),
                         onClick = { source = WishEntity.FROM_TOTAL }
@@ -108,10 +108,20 @@ fun WishScreen(
                 Text(
                     text = if (fromMonth) {
                         val span = if (monthThroughDay == 1) "本月 1 日" else "本月 1–${monthThroughDay} 日"
-                        "$span：预算 ${centsToPlainYuan(monthBudgetCents)}" +
-                            " − 已花 ${centsToPlainYuan(monthSpentCents)}"
+                        buildString {
+                            append("$span：预算 ${centsToPlainYuan(piggyMonth.budgetCents)}")
+                            append(" − 已花 ${centsToPlainYuan(piggyMonth.spentCents)}")
+                            if (piggyMonth.hasSaving) {
+                                append("\n其中自己攒了 ${centsToPlainYuan(piggyMonth.savedCents)}")
+                            }
+                        }
                     } else {
-                        "${startDate.toChineseDate()}起，所有日子攒下来的"
+                        buildString {
+                            append("${startDate.toChineseDate()}起，所有日子攒下来的")
+                            if (piggyTotal.hasSaving) {
+                                append("\n其中自己攒了 ${centsToPlainYuan(piggyTotal.savedCents)}")
+                            }
+                        }
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant

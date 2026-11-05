@@ -13,10 +13,16 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * 版本历史：
  * 1 → 支出记录 + 预算规则
  * 2 → 增加心愿单表（wish）
+ * 3 → 增加攒钱表（saving）
  */
 @Database(
-    entities = [TransactionEntity::class, BudgetRuleEntity::class, WishEntity::class],
-    version = 2,
+    entities = [
+        TransactionEntity::class,
+        BudgetRuleEntity::class,
+        WishEntity::class,
+        SavingEntity::class
+    ],
+    version = 3,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -24,6 +30,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun transactionDao(): TransactionDao
     abstract fun budgetRuleDao(): BudgetRuleDao
     abstract fun wishDao(): WishDao
+    abstract fun savingDao(): SavingDao
 
     companion object {
         /**
@@ -49,6 +56,26 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * 2 → 3：同样只新增一张表（攒钱记录），不动老数据。
+         * 老用户升级后账本、预算、心愿全都在，攒钱从 0 开始。
+         */
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `saving` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `source` TEXT NOT NULL,
+                        `amountCents` INTEGER NOT NULL,
+                        `date` TEXT NOT NULL,
+                        `createdAt` INTEGER NOT NULL
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
+
         @Volatile
         private var instance: AppDatabase? = null
 
@@ -58,7 +85,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "daily_budget.db"
-                ).addMigrations(MIGRATION_1_2)
+                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .build()
                     .also { instance = it }
             }
